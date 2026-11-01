@@ -1,6 +1,6 @@
 # WhisperMark
 
-> AI 驱动的智学网阅卷工具：**DSH（DeepSeek Harness）插件优先，CLI 为辅**。支持自动批改、手动打分、图片自动识别，千份级答题卡批量处理。
+> AI 驱动的智学网阅卷工具：**DSH（DeepSeek Harness）插件与CLI **。支持自动批改、手动打分、图片自动识别，千份级答题卡批量处理。
 
 ## 快速开始（DSH 插件，推荐）
 
@@ -55,7 +55,7 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 配置 AI（DeepSeek 为主模型）
+### 配置 AI（DeepSeek 为例）
 
 ```bash
 # DeepSeek（默认，推荐）
