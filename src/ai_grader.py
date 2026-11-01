@@ -161,20 +161,27 @@ class AIGrader:
             if not answer_text and self.question_analysis.model_answer:
                 answer_text = f"标准答案：{self.question_analysis.model_answer}"
 
+        if not rubric:
+            rubric = "（未提供评分细则）"
+
         system_prompt = f"""你是一位经验丰富的中学教师，正在批改学生试卷。
 满分：{max_score} 分
 """
         if answer_text:
             system_prompt += f"\n{answer_text}\n"
-        if rubric:
-            system_prompt += f"\n评分细则：\n{rubric}\n"
+        system_prompt += f"\n评分细则（唯一评分依据）：\n{rubric}\n"
 
         system_prompt += f"""
-请严格按照评分细则，对照学生答案逐项给分。
+【评分规则——必须严格遵守】
+1. 上面评分细则中的每一条都是采分点，你只能按这些采分点逐项给分。
+2. 严禁凭空编造评分细则里没有的采分点、步骤或分值；严禁凭常识或印象加分/扣分。
+3. 学生答案与评分细则逐点对照：命中某采分点给该点分，未命中扣该点分。
+4. 最终给分 = 各采分点得分之和，必须在 0 到 {max_score} 之间。
+5. 若评分细则缺失，不得猜测，confidence 置为 "low" 并在 reasoning 中说明“未提供评分细则”。
 
 【重要】你的回复必须且只能是一个JSON对象，不要输出任何其他文字、分析或解释！
 格式如下：
-{{"score": 8.5, "reasoning": "评分理由", "details": "详细点评", "confidence": "high"}}
+{{"score": 8.5, "reasoning": "评分理由（逐采分点说明给/扣分）", "details": "详细点评", "confidence": "high"}}
 
 score: 数字，0到{max_score}之间
 confidence: "high"或"medium"或"low"

@@ -1,6 +1,18 @@
 # WhisperMark
 
-> Agent 驱动的智学网阅卷 CLI 工具，支持自动批改、手动打分、图片自动识别
+> AI 驱动的智学网阅卷工具：**DSH（DeepSeek Harness）插件优先，CLI 为辅**。支持自动批改、手动打分、图片自动识别，千份级答题卡批量处理。
+
+## 快速开始（DSH 插件，推荐）
+
+WhisperMark 以 **DeepSeek Harness (DSH) 插件**为主版本，安装后在 DSH 中调用 `wm_probe` 工具，即可批量批改上千份答题卡；CLI 作为底层执行器保留。
+
+插件核心流程（锚定评分细则，降低批量幻觉）：
+
+1. `check_env`：自检 Python、依赖、API Key 环境。
+2. `analyze_question`：上传题干图片，生成标准答案、解析、评分细则。
+3. `grade`：传入答卷图片（一次可上千份），并**强制复用**上一步生成的同一份评分细则，禁止为不同答卷重写细则。
+
+> 评分细则全场锚定、禁止编造，是「千份级批量不丢分、少幻觉」的关键设计。
 
 ## 为什么选择 WhisperMark
 
@@ -25,49 +37,34 @@ WhisperMark 采用 **Playwright 浏览器自动化**，直接操作页面 DOM，
 - **分数自动提交**：自动填入分数、点击提交、等待下一张加载
 - **满分自动读取**：从页面输入框属性读取真实满分，无需手动配置
 - **后台静默运行**：浏览器可最小化，不占用鼠标键盘，批阅期间可自由操作电脑
-- **多模型支持**：兼容 MiMo v2.5 / DeepSeek / 通义千问 / 硅基流动等 API
+- **多模型支持**：DeepSeek 为主模型，兼容任意 OpenAI 兼容接口
 
-## 快速开始
+## CLI 快速开始
 
 ### 环境要求
 
 - Python 3.8+
 - Windows / macOS / Linux
 
-### 安装
+### 安装（CLI 版本）
 
 ```bash
-git clone https://github.com/yourname/WhisperMark.git
+git clone https://github.com/72-hour/WhisperMark.git
 cd WhisperMark
 pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 配置 AI
-
-设置环境变量（推荐 MiMo v2.5，性价比最高）：
+### 配置 AI（DeepSeek 为主模型）
 
 ```bash
-# 小米 MiMo v2.5（推荐，支持图片输入，价格极低）
-export AI_BASE_URL=https://api.xiaomimimo.com/v1
-export AI_MODEL=MiMo-V2.5
-export AI_API_KEY=sk-xxx
-
-# DeepSeek
+# DeepSeek（默认，推荐）
 export AI_BASE_URL=https://api.deepseek.com/v1
 export AI_MODEL=deepseek-chat
 export AI_API_KEY=sk-xxx
-
-# 硅基流动（国内免费额度）
-export AI_BASE_URL=https://api.siliconflow.cn/v1
-export AI_MODEL=Qwen/Qwen2.5-VL-72B-Instruct
-export AI_API_KEY=sk-xxx
-
-# OpenAI
-export AI_API_KEY=sk-xxx
 ```
 
-或直接修改 `src/config.py` 中的 `AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`。
+默认值已写入 `src/config.py`（`AI_BASE_URL` / `AI_MODEL`），也可通过 `--base-url` / `--model` / `--api-key` 覆盖为任意 OpenAI 兼容接口。
 
 ### Token 消耗与费用估算
 
@@ -83,12 +80,9 @@ export AI_API_KEY=sk-xxx
 
 | 模型 | 输入价格 | 输出价格 | 预估总费用 |
 |------|----------|----------|-----------|
-| **MiMo v2.5** | ¥1 / 百万token | ¥2 / 百万token | **约 ¥0.2** |
-| DeepSeek V4 | ¥1 / 百万token | ¥2 / 百万token | 约 ¥0.2 |
+| **DeepSeek（主力）** | ¥1 / 百万token | ¥2 / 百万token | **约 ¥0.2** |
 | GPT-4o | $2.5 / 百万token | $10 / 百万token | 约 ¥3~4 |
 | Qwen2.5-VL-72B（硅基流动） | 免费额度 | 免费额度 | ¥0 |
-
-> MiMo v2.5 支持原生图片理解，定价在 2026 年 5 月永久下调后性价比极高。缓存命中时输入价格仅 ¥0.02/百万token。
 
 ### 运行
 
@@ -157,7 +151,7 @@ WhisperMark/
 
 ### Q: AI 返回空内容怎么办？
 
-A: 检查模型是否支持图片输入。推荐使用 `qwen-vl-max` 或 `Qwen/Qwen2.5-VL-72B-Instruct`。
+A: 检查模型是否支持图片输入。批改需要视觉（多模态）模型，确认你的 DeepSeek 模型名支持图片理解后再试。
 
 ### Q: 提交失败怎么办？
 
@@ -165,12 +159,11 @@ A: 查看 `data/debug.log` 日志文件，确认选择器是否匹配。智学�
 
 ### Q: 支持哪些 AI 模型？
 
-A: 任何支持 OpenAI 兼容接口的多模态模型。包括但不限于：
-- 小米 MiMo v2.5（推荐，性价比最高）
+A: 任何支持 OpenAI 兼容接口的多模态模型，默认以 DeepSeek 为主。包括但不限于：
+- DeepSeek（默认主模型）
 - OpenAI GPT-4o
 - 通义千问 qwen-vl-max
 - 硅基流动 Qwen2.5-VL
-- DeepSeek V4
 
 ### Q: 批阅时浏览器必须前台运行吗？
 

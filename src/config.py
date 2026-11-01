@@ -41,10 +41,10 @@ class Config:
     # 图片配置
     IMAGE_ROTATION: int = 0  # 默认旋转角度，0=不旋转
 
-    # AI 阅卷配置
+    # AI 阅卷配置（DeepSeek 为主模型）
     AI_API_KEY: str = ""           # API Key (必填，通过环境变量 AI_API_KEY 设置)
-    AI_BASE_URL: str = "https://api.openai.com/v1"  # API 地址
-    AI_MODEL: str = "gpt-4o"       # 模型名称
+    AI_BASE_URL: str = "https://api.deepseek.com/v1"  # DeepSeek 兼容 OpenAI 接口地址
+    AI_MODEL: str = "deepseek-chat"                   # 默认模型
 
     def __post_init__(self):
         """初始化后创建必要的目录"""
