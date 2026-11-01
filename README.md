@@ -4,7 +4,7 @@
 
 ## 快速开始（DSH 插件，推荐）
 
-WhisperMark 以 **DeepSeek Harness (DSH) 插件**为主版本，安装后在 DSH 中调用 `wm_probe` 工具，即可批量批改上千份答题卡；CLI 作为底层执行器保留。
+WhisperMark 以 **DeepSeek Harness (DSH) 插件**为主版本，安装后在 DSH 中调用 `wm_probe` 工具，即可批量批改上千份答题卡；CLI 作为底层执行器保留。插件源码在本仓库的 [`dsh-plugin/`](dsh-plugin/) 目录，与 CLI 统一管理。
 
 插件核心流程（锚定评分细则，降低批量幻觉）：
 

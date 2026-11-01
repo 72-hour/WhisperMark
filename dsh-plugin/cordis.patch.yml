@@ -1,0 +1,6 @@
+# wm-probe bundle patch: 将一个工具插件插入 profile 组合树。
+# 该插件通过 ctx.tools.register(defineTool(...)) 注册名为 `wm_probe` 的工具，
+# 其 parameters 由 dsh-tools 编译为 { type: "object", ... }，避免 type: null。
+- insert:
+    - id: wm-probe
+      name: 'wm-probe'
