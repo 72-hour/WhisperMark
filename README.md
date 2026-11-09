@@ -1,72 +1,184 @@
-# WhisperMark
+# WhisperMark 2.0
 
-> AI 驱动的智学网阅卷工具：**DSH（DeepSeek Harness）插件与CLI **。支持自动批改、手动打分、图片自动识别，千份级答题卡批量处理。
+> Agent 驱动的多平台 AI 阅卷：**DSH / workbuddy 插件 + 命令行 CLI**。
+> 评分细则锚定，批量批改不漂分；晚上挂机睡觉，早上起来全改完。
 
-## 快速开始（DSH 插件，推荐）
+[![Python](https://img.shields.io/badge/python-3.8%2B-3776AB.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
+[![DSH Plugin](https://img.shields.io/badge/DSH-workbuddy%20plugin-6366f1.svg)](dsh-plugin/)
+[![Playwright](https://img.shields.io/badge/Playwright-chromium-2EAD33.svg)](https://playwright.dev/)
+[![Tests](https://img.shields.io/badge/tests-114%20passed-22c55e.svg)](tests/)
 
-WhisperMark 以 **DeepSeek Harness (DSH) 插件**为主版本，安装后在 DSH 中调用 `wm_probe` 工具，即可批量批改上千份答题卡；CLI 作为底层执行器保留。插件源码在本仓库的 [`dsh-plugin/`](dsh-plugin/) 目录，与 CLI 统一管理。
+![阅卷监控 · 深色主题](docs/screenshots/monitor-dark.jpg)
 
-插件核心流程（锚定评分细则，降低批量幻觉）：
+## 目录
 
-1. `check_env`：自检 Python、依赖、API Key 环境。
-2. `analyze_question`：上传题干图片，生成标准答案、解析、评分细则。
-3. `grade`：传入答卷图片（一次可上千份），并**强制复用**上一步生成的同一份评分细则，禁止为不同答卷重写细则。
+- [这是什么](#这是什么)
+- [两种用法](#两种用法)
+- [核心特性](#核心特性)
+- [快速开始](#快速开始)
+- [实时监控页](#实时监控页)
+- [评分细则锚定（防幻觉核心）](#评分细则锚定防幻觉核心)
+- [workbuddy / DSH 插件](#workbuddy--dsh-插件)
+- [Token 消耗与费用估算](#token-消耗与费用估算)
+- [项目结构](#项目结构)
+- [测试](#测试)
+- [常见问题](#常见问题)
+- [2.0 更新了什么](#20-更新了什么)
+- [License](#license)
+- [免责声明](#免责声明)
 
-> 评分细则全场锚定、禁止编造，是「千份级批量不丢分、少幻觉」的关键设计。
+## 这是什么
 
-## 为什么选择 WhisperMark
+WhisperMark 2.0 是 [WhisperMark](https://github.com/72-hour/WhisperMark)（Python + Playwright 阅卷引擎）与 AI-Marker-Suite（多平台适配）的融合体：
 
-市面上的阅卷辅助工具大多基于**RPA**（如 AutoHotKey、按键精灵），运行时鼠标被完全占用，无法进行其他操作。
+- **CLI 版**：Playwright 直接操作智学网 / 阅小二的答题卡页面，自动填分、提交、换卷，浏览器可最小化后台挂机；
+- **插件版（workbuddy / DSH）**：在 DeepSeek Harness 中注册 `wm_probe` 工具，按「题干 → 评分细则 → 整批答卷」流程批量给分，适合一次上传上千张答题卡。
 
-WhisperMark 采用 **Playwright 浏览器自动化**，直接操作页面 DOM，**不占用鼠标和键盘**：
+当前支持平台：**智学网**（iframe 微前端）、**阅小二**（Vue3 + Element Plus）。
 
-| 对比项 | 鼠标脚本类工具 | WhisperMark |
-|--------|---------------|-------------|
-| 运行时能否操作鼠标 | 不能，鼠标被脚本控制 | **能，鼠标完全空闲** |
-| 浏览器能否最小化 | 不能，必须前台可见 | **能，最小化后继续批阅** |
-| 能否边批阅边做其他事 | 不能，屏幕被占用 | **能，终端挂后台即可** |
-| 出错处理 | 脚本偏移直接点错 | CSS 选择器精确定位，自动重试 |
+## 两种用法
 
-**简而言之：启动后最小化浏览器，去干别的事，6~10 分钟批完 100 份。**
+| 用法 | 适合场景 | 入口 |
+|------|---------|------|
+| **workbuddy / DSH 插件**（教师免费） | 已有答题卡图片，想让 Agent 批量给分、生成评分细则 | `dsh-plugin/` → 工具 `wm_probe` |
+| **CLI 浏览器阅卷** | 想在智学网 / 阅小二上自动填分、提交、无人值守挂机 | `python main.py grade ...` |
 
-## 功能特性
+两者共用同一套 `wm` 引擎与同一份「细则锚定」逻辑，插件和 CLI 不会出现两套 prompt 漂移。
 
-- **AI 自动阅卷**：上传题干图片，AI 自动生成答案、解析、评分细则，自动批改每份答卷
-- **手动阅卷**：键盘快捷键打分，回车提交，支持回评
-- **答题卡识别**：自动定位 iframe 中的答题卡图片
-- **分数自动提交**：自动填入分数、点击提交、等待下一张加载
-- **满分自动读取**：从页面输入框属性读取真实满分，无需手动配置
-- **后台静默运行**：浏览器可最小化，不占用鼠标键盘，批阅期间可自由操作电脑
-- **多模型支持**：DeepSeek 为主模型，兼容任意 OpenAI 兼容接口
+## 核心特性
 
-## CLI 快速开始
+- **AI 多模态评分**：识别手写答题卡，逐采分点给分，输出理由与置信度
+- **评分细则锚定（防幻觉）**：细则结构化落盘 `data/rubrics/*.json` + 版本号 + 锁定，批改中禁止 AI 重写
+- **Playwright 自动化**：直接操作 DOM，不占鼠标键盘，浏览器可最小化后台挂机
+- **实时监控面板**：本地端口 + SSE 实时推送，进度 / 得分 / 异常一目了然（深/浅色、移动端、演示数据）
+- **虚拟批改演示**：`python main.py demo` 不装浏览器、不配 AI Key 也能完整跑一遍并看到监控页
+- **微信推送**：开始 / 进度 / 异常 / 完成自动推送（workbuddy 小龙虾等任意 webhook）
+- **历史导出**：CSV / JSON / HTML 三种格式（HTML 报告已做转义与排版）
 
-### 环境要求
+## 快速开始
 
-- Python 3.8+
-- Windows / macOS / Linux
-
-### 安装（CLI 版本）
+### 1. 安装
 
 ```bash
 git clone https://github.com/72-hour/WhisperMark.git
 cd WhisperMark
 pip install -r requirements.txt
-playwright install chromium
+playwright install chromium        # 只做插件批量评分可跳过
 ```
 
-### 配置 AI（DeepSeek 为例）
+### 2. 配置 AI（DeepSeek 为例）
 
 ```bash
-# DeepSeek（默认，推荐）
-export AI_BASE_URL=https://api.deepseek.com/v1
-export AI_MODEL=deepseek-chat
-export AI_API_KEY=sk-xxx
+copy .env.example .env
 ```
 
-默认值已写入 `src/config.py`（`AI_BASE_URL` / `AI_MODEL`），也可通过 `--base-url` / `--model` / `--api-key` 覆盖为任意 OpenAI 兼容接口。
+```ini
+# .env
+WM_AI_API_KEY=sk-xxx
+WM_AI_BASE_URL=https://api.deepseek.com/v1
+WM_AI_MODEL=deepseek-chat
+```
 
-### Token 消耗与费用估算
+兼容任意 OpenAI 兼容接口（DeepSeek / Qwen-VL / 火山引擎 / 硅基流动等），也兼容旧的 `AI_API_KEY` 变量名。
+
+### 3. 先看效果（无需登录、无需 AI Key）
+
+```bash
+python main.py check-env     # 环境自检
+python main.py demo          # 虚拟批改 200 份，自动打开监控页
+```
+
+打开终端打印的地址（默认 <http://127.0.0.1:8321>）即可看到实时监控。
+
+### 4. 生成评分细则（教师确认）
+
+```bash
+python main.py analyze-question --image 题干.jpg --platform zhixue --max-score 20 --question-id 数学第15题
+# 教师检查 data/rubrics/数学第15题.md 后锁定：
+python main.py analyze-question --image 题干.jpg --platform zhixue --max-score 20 --question-id 数学第15题 --confirm
+```
+
+### 5. 真实阅卷
+
+```bash
+# 交互式：手动登录 → 进入阅卷中心 → 选择题目 → 回车开始
+python main.py grade --platform zhixue --rubric-id 数学第15题
+
+# 无人值守（已登录过，cookies 已保存）：直接指定阅卷页 URL
+python main.py grade --platform zhixue --url "<阅卷页URL>" --rubric-id 数学第15题 --total 200 --auto
+
+# 导出报告
+python main.py export --format html --output 批改报告.html
+```
+
+> 首次登录需要人工完成（验证码等），之后 cookies 会保存到 `data/cookies.json`，才能 `--auto` 挂机。
+> 当前 CLI 按「一题一个总分填分框」的答题卡工作；如果是分小题多个分数框，需要按页面结构适配（见 FAQ）。
+
+## 实时监控页
+
+`web/monitor.html` 由本地 HTTP 服务在 `/` 返回，通过 SSE 实时刷新：
+
+| 地址 | 说明 |
+|------|------|
+| `/` | 阅卷实时监控页 |
+| `/dashboard` | 项目展示页 |
+| `/api/state` | 当前状态 JSON（轮询兜底） |
+| `/api/health` | 健康检查 |
+| `/events` | SSE 事件流 |
+
+![阅卷监控 · 移动端](docs/screenshots/monitor-mobile.jpg)
+
+- 端口默认 `8321`，被占用自动顺延；可用 `--port` / `--monitor-port` 指定
+- 直接双击打开 `web/monitor.html` 或加 `?demo=1` 会进入演示数据模式（方便先看设计）
+- 深色 / 浅色主题、SSE 指数退避重连、轮询兜底、360px 移动端布局
+
+## 评分细则锚定（防幻觉核心）
+
+1. **生成**：AI 分析题干，产出结构化采分点（`id` / `description` / `score` / `keywords`）
+2. **确认**：导出独立 MD 供教师检查，确认后锁定 + 版本号 +0.1
+3. **落盘**：`data/rubrics/{question_id}.json`（机器读取锚点）
+4. **强制复用**：批改时每份答卷的 system prompt 注入同一份锁定细则，禁止 AI 凭空造分
+
+细则自洽性校验：采分点分值之和 ≠ 满分时，生成 / 加载都会给出警告，提醒教师核对。
+
+## workbuddy / DSH 插件
+
+`dsh-plugin/` 是 DeepSeek Harness 插件（工具名 `wm_probe`，workbuddy 目前对教师免费）。加载后在对话里说：
+
+> 帮我批改这些答题卡：题干是 `题干.jpg`，答卷在 `D:\答题卡\` 目录。
+
+工具会按固定流程执行：
+
+1. `action=check_env` 自检环境；
+2. `action=analyze_question` 传题干图片，生成标准答案 / 解析 / 评分细则 `scoring_rubric`；
+3. `action=grade` 传答卷图片或目录 + 上一步的 `scoring_rubric`，整批复用同一份细则批量给分。
+
+**安全约定**：整批答卷必须复用同一份 rubric，禁止为不同答卷临时改写评分细则，避免评分标准漂移（幻觉）。插件只返回「AI 建议分数」，提交到平台请走 CLI 或人工复核。
+
+插件源码结构：
+
+```
+dsh-plugin/
+├── package.json          # DSH 插件声明
+├── cordis.patch.yml      # bundle patch：注册 wm-probe
+├── lib/index.js          # defineTool -> wm_probe
+└── scripts/
+    ├── _bootstrap.py     # 定位 2.0 项目根目录 / 载入 wm 引擎
+    ├── check_env.py
+    ├── analyze_question.py
+    └── grade_image.py    # 细则锚定批量给分
+```
+
+若插件不在仓库内运行，设置 `WHISPERMARK_HOME` 指向本项目根目录即可。手动验证：
+
+```bash
+python dsh-plugin/scripts/check_env.py
+python dsh-plugin/scripts/analyze_question.py 题干.jpg --max-score 20
+python dsh-plugin/scripts/grade_image.py 答题卡目录/ --max-score 20 --rubric "评分细则……"
+```
+
+## Token 消耗与费用估算
 
 以批阅 **100 份答卷**为例（含 1 次题干分析）：
 
@@ -76,107 +188,74 @@ export AI_API_KEY=sk-xxx
 | 总输出 Token | 约 0.5~1 万 |
 | 耗时 | 约 6~10 分钟 |
 
-**各模型费用对比（批阅 100 份）：**
-
 | 模型 | 输入价格 | 输出价格 | 预估总费用 |
 |------|----------|----------|-----------|
-| **DeepSeek（主力）** | ¥1 / 百万token | ¥2 / 百万token | **约 ¥0.2** |
-| GPT-4o | $2.5 / 百万token | $10 / 百万token | 约 ¥3~4 |
+| **DeepSeek（主力）** | ¥1 / 百万 token | ¥2 / 百万 token | **约 ¥0.2** |
+| GPT-4o | $2.5 / 百万 token | $10 / 百万 token | 约 ¥3~4 |
 | Qwen2.5-VL-72B（硅基流动） | 免费额度 | 免费额度 | ¥0 |
-
-### 运行
-
-```bash
-python main.py
-```
-
-## 使用流程
-
-```
-1. 启动程序，浏览器自动打开智学网
-2. 在浏览器中手动登录、进入阅卷中心、选择题目
-3. 回到终端按回车确认
-4. （可选）上传题干图片，AI 自动生成评分细则
-5. 开始批阅 —— 最小化浏览器，去做其他事，终端自动完成剩余工作
-   - 有题干 → AI 自动批阅模式（全自动）
-   - 无题干 → 手动模式（按 a 调用 AI 单次评分）
-```
-
-> **提示**：登录步骤需要手动操作浏览器，之后即可最小化。批阅全程通过 Playwright API 直接控制页面，无需鼠标参与。
-
-## 快捷键
-
-| 按键 | 功能 |
-|------|------|
-| `0-9` | 输入分数 |
-| `.` | 小数点 |
-| `Enter` | 提交分数 |
-| `a` | 调用 AI 评分（手动模式） |
-| `n` | 跳过当前 |
-| `p` | 上一份（回评） |
-| `r` | 旋转图片 |
-| `s` | 保存图片 |
-| `d` | 调试（页面分析） |
-| `空格` | 暂停/继续自动批阅 |
-| `q` | 退出 |
 
 ## 项目结构
 
 ```
 WhisperMark/
-├── main.py              # 主程序入口
-├── requirements.txt     # 依赖清单
-├── README.md            # 本文件
-├── .gitignore           # Git 忽略规则
-├── src/
-│   ├── __init__.py
-│   ├── config.py        # 配置管理
-│   ├── browser.py       # 浏览器管理（Playwright）
-│   ├── login.py         # 登录模块（手动模式）
-│   ├── grader.py        # 阅卷核心逻辑
-│   ├── ai_grader.py     # AI 阅卷模块
-│   └── image_utils.py   # 图片处理工具
-└── data/                # 运行时数据（自动创建，已 gitignore）
+├── main.py                 # CLI 入口
+├── demo_monitor.py         # 演示入口（兼容旧命令）
+├── wm/                     # 核心包
+│   ├── config.py           # 配置（env/.env/命令行三层覆盖）
+│   ├── browser.py          # Playwright 浏览器管理（含 stealth）
+│   ├── demo.py             # 虚拟批改演示引擎
+│   ├── engine/             # 引擎层：grader / ai_grader / rubric / state
+│   ├── platforms/          # 平台适配器：zhixue / haoyuejuan / registry
+│   ├── monitor/            # 监控服务器（HTTP + SSE）
+│   ├── notify/             # 微信推送（异步队列）
+│   └── utils/              # 图片处理、日志
+├── dsh-plugin/             # workbuddy / DSH 插件（wm_probe）
+├── web/                    # dashboard.html / monitor.html
+├── skill/SKILL.md          # Agent Skill（CodeBuddy / workbuddy）
+├── tests/                  # pytest 测试套件（114 例）
+├── docs/                   # 截图 + 示例报告
+├── data/                   # 运行时数据（rubrics / history，已 gitignore）
+└── runtime/monitor/        # 临时监控文件（启动自动生成）
 ```
 
-## 工作原理
+## 测试
 
-1. **Playwright 浏览器**：启动 Chromium，用户手动完成登录（仅此一步需要操作浏览器）
-2. **DOM 直接操作**：通过 Playwright API 直接读写页面元素，不模拟鼠标，不占用光标
-3. **iframe 穿透**：智学网使用微前端架构，CLI 在所有 frame 中搜索答题卡和输入框
-4. **AI 视觉模型**：将答题卡图片发送给多模态大模型，获取评分建议
-5. **自动提交**：通过 CSS 选择器精确定位输入框和按钮，自动填入分数并提交
+```bash
+pip install pytest
+python -m pytest tests -q      # 114 passed
+```
+
+覆盖：配置覆盖、细则生成/锁定/加载、AI 返回解析容错、状态机、监控服务器生命周期与 SSE、CLI 参数、导出转义、虚拟演示流程、批改循环竞态。修复清单与残余风险见 [BUGFIXES.md](BUGFIXES.md)。
 
 ## 常见问题
 
-### Q: AI 返回空内容怎么办？
+**Q：没有 AI Key / 没装 Chromium 能跑吗？**
+A：可以跑 `python main.py demo` 和 `check-env`；真实阅卷需要 AI Key + Chromium + 平台账号。
 
-A: 检查模型是否支持图片输入。批改需要视觉（多模态）模型，确认你的 DeepSeek 模型名支持图片理解后再试。
+**Q：打开监控页看不到内容？**
+A：先运行 `python main.py demo` 或 `python main.py monitor`（监控服务随进程存活）；端口被占用时以终端打印的实际地址为准。
 
-### Q: 提交失败怎么办？
+**Q：答题卡是分小题多个分数框怎么办？**
+A：当前 CLI 按「一题一个总分填分框」实现。分小题页面需要按真实 DOM 适配（`wm/platforms/` 下的选择器与填分逻辑），欢迎提 Issue 附页面截图/HTML。
 
-A: 查看 `data/debug.log` 日志文件，确认选择器是否匹配。智学网页面结构可能更新，需要调整 `src/grader.py` 中的选择器。
+**Q：为什么用 Playwright 而不是鼠标脚本？**
+A：直接操作 DOM，不占用鼠标键盘；浏览器可最小化，批阅时照常使用电脑。
 
-### Q: 支持哪些 AI 模型？
+**Q：AI 评分能直接当最终成绩吗？**
+A：不能。AI 结果仅供参考，请教师复核；低置信度 / 异常记录会在监控页与导出报告中标注。
 
-A: 任何支持 OpenAI 兼容接口的多模态模型，默认以 DeepSeek 为主。包括但不限于：
-- DeepSeek（默认主模型）
-- OpenAI GPT-4o
-- 通义千问 qwen-vl-max
-- 硅基流动 Qwen2.5-VL
+## 2.0 更新了什么
 
-### Q: 批阅时浏览器必须前台运行吗？
+- 全新监控页（深/浅色、进度环、KPI、分数分布、异常时间线、可搜索记录表、演示模式）
+- 新增 `python main.py demo`：无浏览器 / 无 AI Key 的虚拟批改演示
+- 修复 Playwright 同步 API 跨线程导致的真实阅卷必崩问题；修复自动批改竞态、监控服务器生命周期、`--platform auto` 失效、`--max-score` 被忽略、HTML 导出 XSS 等问题
+- 微信推送改异步不阻塞批改；AI 解析容错与分数钳制；可选依赖惰性导入
+- 新增 `tests/`（114 例）、`.gitignore`、`BUGFIXES.md`
 
-A: **不需要**。登录阶段需要手动操作浏览器，之后即可最小化。WhisperMark 通过 Playwright API 直接操作页面 DOM，不模拟鼠标移动，浏览器在后台正常工作。你可以最小化浏览器去做其他事，批阅在终端自动进行。
+## License
 
-### Q: 和其他阅卷工具相比有什么区别？
-
-A: 市面上多数工具基于鼠标脚本（AutoHotKey、按键精灵等），运行时鼠标被锁定，必须前台运行。WhisperMark 使用 Playwright 直接操作浏览器内部接口，鼠标完全空闲，浏览器可最小化后台运行。
-
-## 许可证
-
-MIT License
+[MIT License](LICENSE)
 
 ## 免责声明
 
-本工具仅用于提升阅卷操作效率，所有批改判断由人工确认。使用本工具产生的任何结果由使用者自行负责。
+本工具仅供学习交流使用。AI 评分结果仅供参考，教师应审核确认后再提交。使用本工具产生的任何后果由使用者自行承担，请遵守阅卷平台的使用条款；答题卡图片会发送到 AI 接口，请确保符合学校的数据合规要求。

@@ -1,29 +1,37 @@
-# Python
+# ===== Python =====
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
 *.egg-info/
-dist/
-build/
-*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Data & Logs
-data/
-*.log
-cookies.json
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Env
+# ===== 环境 / 密钥 =====
 .env
-*.env
+*.key
+
+# ===== 运行时数据（不应入库）=====
+data/debug.log
+data/history/
+data/screenshots/
+data/cookies.json
+data/rubrics/*
+!data/rubrics/.gitkeep
+runtime/
+# 已导出的报告
+history_*.csv
+history_*.html
+demo_report.html
+
+# ===== 依赖 / 构建 =====
+dsh-plugin/node_modules/
+
+# ===== 本地调试产物 =====
+*.log
+.edge-*
+shot_*.png
+shots/
+tmp/
+.qa-pytest-tmp/
+.qa-manual/
+.pytest_cache/

@@ -1,7 +1,7 @@
 {
   "name": "wm-probe",
-  "version": "0.1.0",
-  "description": "WhisperMark 智学网答题卡 AI 批改的 DeepSeek Harness (DSH) 插件：analyze 生成评分细则、grade 批量给分，DeepSeek 为主模型",
+  "version": "0.2.0",
+  "description": "WhisperMark 2.0 智学网答题卡 AI 批改的 DeepSeek Harness (DSH) 插件：analyze 生成评分细则、grade 批量给分，DeepSeek 为主模型",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

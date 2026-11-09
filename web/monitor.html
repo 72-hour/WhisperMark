@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#070a12">
+<title>WhisperMark 2.0 · 阅卷指挥中心</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%236366f1'/%3E%3Cpath d='M8 20h1.6M12.4 13v7M16.8 8v13M21.2 12v9M25.6 16v3' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+try {
+var savedTheme = localStorage.getItem('wm-monitor-theme');
+if (savedTheme === 'light' || savedTheme === 'dark') {
+document.documentElement.setAttribute('data-theme', savedTheme);
+}
+} catch (e) {}
+</script>
+<style>
+:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-full:999px;--fs-2xs:10.5px;--fs-xs:11.5px;--fs-sm:12.5px;--fs-base:14px;--fs-md:15px;--fs-lg:18px;--fs-xl:22px;--fs-2xl:30px;--fs-3xl:40px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;--mono:"SFMono-Regular",ui-monospace,Consolas,"Liberation Mono",monospace;--ease:cubic-bezier(.22,1,.36,1);--gutter:clamp(16px,3vw,32px);color-scheme:dark;--bg:#070a12;--panel-grad:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.022));--surface-1:rgba(255,255,255,.045);--surface-2:rgba(255,255,255,.075);--surface-solid:#0c1220;--border:rgba(255,255,255,.085);--border-strong:rgba(255,255,255,.17);--text:#eef2ff;--text-2:#a9b5cf;--text-3:#6f7c99;--accent:#6366f1;--accent-2:#22d3ee;--accent-grad:linear-gradient(135deg,#6366f1 0%,#22d3ee 100%);--accent-soft:rgba(99,102,241,.15);--ok:#34d399;--ok-soft:rgba(52,211,153,.13);--warn:#fbbf24;--warn-soft:rgba(251,191,36,.13);--danger:#fb7185;--danger-soft:rgba(251,113,133,.13);--info:#60a5fa;--info-soft:rgba(96,165,250,.13);--track:rgba(255,255,255,.08);--glow-1:rgba(99,102,241,.20);--glow-2:rgba(34,211,238,.11);--topbar-bg:rgba(7,10,18,.74);--shadow-1:0 22px 44px -32px rgba(0,0,0,.95),0 1px 0 rgba(255,255,255,.03) inset;--shadow-2:0 30px 70px -40px rgba(0,0,0,1)}
+:root[data-theme="light"]{color-scheme:light;--bg:#eef1f8;--panel-grad:linear-gradient(180deg,#ffffff,rgba(255,255,255,.78));--surface-1:rgba(255,255,255,.82);--surface-2:rgba(255,255,255,.95);--surface-solid:#ffffff;--border:rgba(15,23,42,.10);--border-strong:rgba(15,23,42,.19);--text:#0f172a;--text-2:#475569;--text-3:#78859b;--accent:#4f46e5;--accent-2:#0891b2;--accent-grad:linear-gradient(135deg,#4f46e5 0%,#0891b2 100%);--accent-soft:rgba(79,70,229,.10);--ok:#059669;--ok-soft:rgba(5,150,105,.10);--warn:#b45309;--warn-soft:rgba(180,83,9,.10);--danger:#e11d48;--danger-soft:rgba(225,29,72,.09);--info:#2563eb;--info-soft:rgba(37,99,235,.10);--track:rgba(15,23,42,.08);--glow-1:rgba(79,70,229,.14);--glow-2:rgba(8,145,178,.10);--topbar-bg:rgba(249,251,255,.82);--shadow-1:0 18px 40px -34px rgba(15,23,42,.55),0 1px 2px rgba(15,23,42,.04);--shadow-2:0 30px 60px -40px rgba(15,23,42,.45)}
+ *,*::before,*::after{box-sizing:border-box}
+ html{-webkit-text-size-adjust:100%}
+ body{margin:0;min-height:100vh;font-family:var(--font);font-size:var(--fs-base);line-height:1.55;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+ body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 520px at 6% -12%,var(--glow-1),transparent 62%),radial-gradient(760px 460px at 96% 2%,var(--glow-2),transparent 60%)}
+ body::after{background:radial-gradient(680px 500px at 60% 110%,var(--glow-2),transparent 65%);opacity:.7}
+ h1,h2,h3,p,dl,dd,dt,ul,figure{margin:0}
+ ul{padding:0;list-style:none}
+ button{font:inherit;color:inherit}
+ a{color:var(--accent-2)}
+ [hidden]{display:none !important}
+::selection{background:var(--accent-soft)}
+ *{scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+ *::-webkit-scrollbar{width:10px;height:10px}
+ *::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+ *::-webkit-scrollbar-track{background:transparent}
+:where(a,button,input,[tabindex]):focus-visible{outline:2px solid var(--accent-2);outline-offset:2px;border-radius:6px}
+ .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+ .skip-link{position:absolute;left:-9999px;top:8px;z-index:200;padding:8px 14px;border-radius:var(--r-sm);background:var(--accent);color:#fff;font-size:var(--fs-sm);font-weight:600;text-decoration:none}
+ .skip-link:focus{left:12px}
+ .wrap{width:100%;max-width:1240px;margin:0 auto;padding:0 var(--gutter)}
+ .topbar{position:sticky;top:0;z-index:60;background:var(--topbar-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%)}
+ .topbar-in{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;min-height:64px;padding-top:8px;padding-bottom:8px}
+ .brand{display:flex;align-items:center;gap:12px;min-width:0}
+ .brand-mark{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;color:#fff;background:var(--accent-grad);box-shadow:0 8px 20px -10px rgba(99,102,241,.95),0 1px 0 rgba(255,255,255,.25) inset}
+ .brand-mark svg{width:21px;height:21px;display:block}
+ .brand-name{font-size:var(--fs-md);font-weight:700;letter-spacing:.01em;line-height:1.2}
+ .brand-sub{display:block;font-size:var(--fs-2xs);font-weight:500;letter-spacing:.12em;color:var(--text-3);text-transform:uppercase}
+ .topbar-meta{margin-left:auto;display:flex;align-items:center;gap:var(--s3);min-width:0}
+ .status-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);font-size:var(--fs-sm);font-weight:650;white-space:nowrap}
+ .status-pill i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+ .status-pill[data-status="running"]{color:var(--ok);background:var(--ok-soft);border-color:rgba(52,211,153,.32)}
+ .status-pill[data-status="running"] i{animation:pulse 1.8s ease-in-out infinite;box-shadow:0 0 0 3px var(--ok-soft)}
+ .status-pill[data-status="paused"]{color:var(--warn);background:var(--warn-soft);border-color:rgba(251,191,36,.32)}
+ .status-pill[data-status="done"]{color:var(--info);background:var(--info-soft);border-color:rgba(96,165,250,.32)}
+ .status-pill[data-status="error"]{color:var(--danger);background:var(--danger-soft);border-color:rgba(251,113,133,.38)}
+ .status-pill[data-status="idle"],.status-pill[data-status="stopped"]{color:var(--text-2);background:var(--surface-1)}
+ .conn{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text-2);white-space:nowrap}
+ .dot{width:7px;height:7px;border-radius:50%;background:var(--text-3);flex:none}
+ .dot.sse{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft);animation:pulse 1.8s ease-in-out infinite}
+ .dot.poll{background:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
+ .dot.demo{background:var(--accent-2);box-shadow:0 0 0 3px var(--accent-soft)}
+ .dot.connecting{background:var(--text-3)}
+ .last-update{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text-3);white-space:nowrap}
+ .last-update .sep{opacity:.45}
+ .clock{font-size:var(--fs-sm);font-weight:600;color:var(--text-2);font-variant-numeric:tabular-nums;letter-spacing:.03em;white-space:nowrap}
+ .theme-toggle{width:34px;height:34px;flex:none;border-radius:10px;cursor:pointer;display:grid;place-items:center;padding:0;background:var(--surface-1);border:1px solid var(--border);color:var(--text-2);transition:background .15s,color .15s,border-color .15s,transform .15s}
+ .theme-toggle:hover{color:var(--text);border-color:var(--border-strong);transform:translateY(-1px)}
+ .theme-toggle svg{width:16px;height:16px;display:block}
+ .theme-toggle .ico-moon{display:none}
+:root[data-theme="light"] .theme-toggle .ico-sun{display:none}
+:root[data-theme="light"] .theme-toggle .ico-moon{display:block}
+ .main{position:relative;z-index:1;display:flex;flex-direction:column;gap:var(--s4);padding-top:var(--s5);padding-bottom:var(--s7)}
+ .demo-banner{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;padding:10px 14px;border-radius:var(--r-md);border:1px solid rgba(34,211,238,.32);background:linear-gradient(90deg,rgba(34,211,238,.11),rgba(99,102,241,.12));color:var(--text-2);font-size:var(--fs-sm)}
+ .demo-badge{display:inline-flex;align-items:center;gap:6px;flex:none;padding:4px 10px;border-radius:var(--r-full);background:var(--accent-grad);color:#fff;font-size:var(--fs-2xs);font-weight:750;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 16px -10px rgba(34,211,238,.9)}
+ .demo-text{flex:1 1 240px;min-width:0}
+ .btn-ghost{appearance:none;cursor:pointer;flex:none;padding:6px 12px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);font-size:var(--fs-sm);font-weight:650;transition:border-color .15s,background .15s,opacity .15s}
+ .btn-ghost:hover{border-color:var(--accent-2)}
+ .btn-ghost:disabled{opacity:.55;cursor:progress}
+ .panel{position:relative;min-width:0;background:var(--panel-grad);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);animation:rise .45s var(--ease) both}
+ .panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 18px;border-bottom:1px solid var(--border)}
+ .panel-title{display:flex;align-items:center;gap:8px;font-size:var(--fs-base);font-weight:650;letter-spacing:.01em;line-height:1.3}
+ .panel-hint{font-size:var(--fs-xs);color:var(--text-3);white-space:nowrap}
+ .panel-count{margin-left:auto;min-width:22px;height:22px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-full);background:var(--surface-1);border:1px solid var(--border);font-size:var(--fs-xs);font-weight:700;color:var(--text-2);font-variant-numeric:tabular-nums}
+ .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s4)}
+ .hero-panel{grid-column:1 / -1;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(250px,auto);align-items:center;gap:var(--s5) var(--s6);padding:var(--s5) var(--s6);background:radial-gradient(130% 190% at 4% -20%,var(--accent-soft),transparent 58%),var(--panel-grad);box-shadow:var(--shadow-2),var(--shadow-1)}
+ .ring-wrap{position:relative;width:158px;height:158px;flex:none;isolation:isolate}
+ .ring-wrap::before{content:"";position:absolute;inset:-12%;border-radius:50%;z-index:-1;background:radial-gradient(closest-side,var(--accent-soft),transparent 72%)}
+ .ring{width:100%;height:100%;display:block}
+ .ring .rg1{stop-color:var(--accent)}
+ .ring .rg2{stop-color:var(--accent-2)}
+ .ring-track{fill:none;stroke:var(--track);stroke-width:10}
+ .ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:10;stroke-linecap:round;stroke-dasharray:326.73;stroke-dashoffset:326.73;transition:stroke-dashoffset .9s var(--ease)}
+ .ring-center{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:1px}
+ .ring-pct{font-size:var(--fs-3xl);font-weight:750;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--accent)}
+ .ring-label{font-size:var(--fs-2xs);letter-spacing:.14em;color:var(--text-3);text-transform:uppercase}
+ .hero-main{min-width:0}
+ .hero-eyebrow{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);letter-spacing:.14em;color:var(--text-3);text-transform:uppercase;margin-bottom:6px}
+ .hero-eyebrow::before{content:"";width:14px;height:2px;border-radius:2px;background:var(--accent-grad)}
+ .hero-count{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+ .hero-count .count{font-size:clamp(30px,4vw,38px);font-weight:750;line-height:1;letter-spacing:-.02em}
+ .hero-count .sep{font-size:var(--fs-xl);color:var(--text-3)}
+ .hero-count .total{font-size:var(--fs-xl);font-weight:600;color:var(--text-2)}
+ .hero-count .unit{font-size:var(--fs-sm);color:var(--text-3)}
+ .progress{height:8px;margin-top:12px;border-radius:var(--r-full);background:var(--track);overflow:hidden}
+ .progress i{display:block;height:100%;width:0;border-radius:var(--r-full);background:var(--accent-grad);transition:width .7s var(--ease)}
+ .hero-sub{margin-top:8px;font-size:var(--fs-sm);color:var(--text-3)}
+ .hero-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px var(--s5);padding-left:var(--s5);border-left:1px solid var(--border)}
+ .hero-facts dt{font-size:var(--fs-xs);color:var(--text-3);letter-spacing:.02em}
+ .hero-facts dd{margin-top:2px;font-size:var(--fs-lg);font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .stat{display:flex;flex-direction:column;gap:5px;padding:15px 18px;min-width:0}
+ .stat-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+ .stat-label{font-size:var(--fs-xs);color:var(--text-3);letter-spacing:.03em;white-space:nowrap}
+ .stat-ico{width:16px;height:16px;flex:none;color:var(--text-3);opacity:.8}
+ .stat-value{display:flex;align-items:baseline;gap:4px;font-size:var(--fs-2xl);font-weight:700;line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+ .stat-unit{font-size:var(--fs-sm);font-weight:500;color:var(--text-3);letter-spacing:0}
+ .stat-sub{font-size:var(--fs-2xs);color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .layout{display:grid;grid-template-columns:minmax(0,1.58fr) minmax(0,1fr);gap:var(--s4);align-items:start}
+ .col{display:flex;flex-direction:column;gap:var(--s4);min-width:0}
+ .live-tag{display:inline-flex;align-items:center;gap:6px;margin-left:auto;padding:3px 9px;border-radius:var(--r-full);background:var(--surface-1);border:1px solid var(--border);font-size:var(--fs-2xs);font-weight:650;color:var(--text-3);white-space:nowrap}
+ .live-tag i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+ .live-tag[data-status="running"]{color:var(--ok);background:var(--ok-soft);border-color:rgba(52,211,153,.3)}
+ .live-tag[data-status="running"] i{animation:pulse 1.8s ease-in-out infinite}
+ .live-tag[data-status="error"]{color:var(--danger);background:var(--danger-soft);border-color:rgba(251,113,133,.32)}
+ .current-body{padding:18px}
+ .current-top{display:flex;align-items:center;gap:14px;min-width:0}
+ .avatar{width:46px;height:46px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:var(--fs-lg);font-weight:700;background:var(--accent-soft);border:1px solid var(--border);color:var(--text)}
+ .avatar.is-empty{color:var(--text-3);background:var(--surface-1)}
+ .current-id{flex:1;min-width:0}
+ .current-name{font-size:var(--fs-lg);font-weight:650;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .current-name.is-empty{color:var(--text-3);font-weight:500;font-size:var(--fs-md)}
+ .chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;min-height:20px}
+ .chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 8px;border-radius:var(--r-full);background:var(--surface-1);border:1px solid var(--border);font-size:var(--fs-2xs);color:var(--text-2);white-space:nowrap}
+ .chip b{font-size:9.5px;font-weight:600;letter-spacing:.08em;color:var(--text-3);text-transform:uppercase}
+ .current-score{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+ .score-big{font-size:34px;font-weight:750;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--accent)}
+ .score-max{font-size:var(--fs-xs);color:var(--text-3);font-variant-numeric:tabular-nums}
+ .reason{margin-top:var(--s4);padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-1)}
+ .reason-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+ .reason-head > span{font-size:var(--fs-2xs);letter-spacing:.1em;color:var(--text-3);text-transform:uppercase}
+ .reason-toggle{appearance:none;border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:4px;color:var(--accent-2);font-size:var(--fs-xs);font-weight:650}
+ .reason-toggle:hover{text-decoration:underline}
+ .reason-text{font-size:var(--fs-md);line-height:1.7;color:var(--text-2);white-space:pre-wrap;overflow-wrap:anywhere}
+ .reason-text.is-clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:5.2em}
+ .conf{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:var(--r-full);border:1px solid transparent;font-size:var(--fs-2xs);font-weight:650;white-space:nowrap;color:var(--text-2);background:var(--surface-1)}
+ .conf::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
+ .conf.high{color:var(--ok);background:var(--ok-soft);border-color:rgba(52,211,153,.3)}
+ .conf.medium{color:var(--warn);background:var(--warn-soft);border-color:rgba(251,191,36,.3)}
+ .conf.low{color:var(--danger);background:var(--danger-soft);border-color:rgba(251,113,133,.3)}
+ .conf.error{color:#fff;background:var(--danger);border-color:transparent;font-weight:750}
+ .current-score .conf{margin-top:2px}
+ .dist-body{padding:10px 16px 14px}
+ .chart-svg{display:block;width:100%;height:auto;overflow:visible}
+ .chart-svg .grid{stroke:var(--border);stroke-width:1;stroke-dasharray:3 4}
+ .chart-svg .base{stroke:var(--border-strong);stroke-width:1}
+ .chart-svg .bar{fill:url(#barGrad);transition:opacity .15s}
+ .chart-svg .bar.zero{fill:var(--track)}
+ .chart-svg .bar:hover{opacity:.82}
+ .chart-svg text{fill:var(--text-3);font-size:9.5px;font-family:var(--font)}
+ .chart-svg .bar-num{fill:var(--text-2);font-weight:650;font-size:10px;font-variant-numeric:tabular-nums}
+ .chart-svg .axis-num{font-variant-numeric:tabular-nums}
+ .chart-svg .stop-top{stop-color:var(--accent-2)}
+ .chart-svg .stop-bottom{stop-color:var(--accent)}
+ .err-scroll{max-height:320px;overflow:auto;padding:6px 18px 14px}
+ .err-list{display:flex;flex-direction:column}
+ .err-item{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding:10px 0}
+ .err-rail{position:relative;display:flex;justify-content:center}
+ .err-dot{width:8px;height:8px;margin-top:5px;border-radius:50%;flex:none;background:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
+ .err-item:not(:last-child) .err-rail::after{content:"";position:absolute;top:17px;bottom:-15px;width:1px;left:50%;background:var(--border);transform:translateX(-.5px)}
+ .err-item.fatal .err-dot{background:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+ .err-msg{font-size:var(--fs-sm);color:var(--text-2);overflow-wrap:anywhere;line-height:1.5}
+ .err-item.fatal .err-msg{color:var(--text);font-weight:550}
+ .err-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+ .err-time{font-size:var(--fs-2xs);color:var(--text-3);font-variant-numeric:tabular-nums;font-family:var(--mono)}
+ .err-tag{padding:0 7px;border-radius:var(--r-full);font-size:var(--fs-2xs);font-weight:700;letter-spacing:.06em;border:1px solid transparent}
+ .err-tag.warn{color:var(--text-3);background:var(--surface-1);border-color:var(--border)}
+ .err-tag.fatal{color:var(--danger);background:var(--danger-soft);border-color:rgba(251,113,133,.35)}
+ .search{position:relative;display:flex;align-items:center;margin-left:auto}
+ .search-ico{position:absolute;left:10px;width:14px;height:14px;color:var(--text-3);pointer-events:none}
+ .search input{width:186px;max-width:100%;padding:7px 28px 7px 30px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--surface-1);color:var(--text);font:inherit;font-size:var(--fs-sm);transition:border-color .15s,background .15s,box-shadow .15s}
+ .search input::placeholder{color:var(--text-3)}
+ .search input:focus{outline:none;border-color:var(--accent-2);background:var(--surface-2);box-shadow:0 0 0 3px var(--accent-soft)}
+ .search .clear{position:absolute;right:5px;width:20px;height:20px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:var(--surface-2);color:var(--text-2);font-size:14px;line-height:1;cursor:pointer}
+ .table-scroll{max-height:min(560px,66vh);overflow:auto;overscroll-behavior:contain}
+ .rec-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:var(--fs-sm)}
+ .rec-table .c-idx{width:54px}
+ .rec-table .c-name{width:96px}
+ .rec-table .c-score{width:148px}
+ .rec-table .c-conf{width:94px}
+ .rec-table .c-time{width:82px}
+ .rec-table thead th{position:sticky;top:0;z-index:2;padding:9px 14px;text-align:left;font-size:var(--fs-2xs);font-weight:650;letter-spacing:.08em;color:var(--text-3);background:var(--surface-solid);border-bottom:1px solid var(--border);white-space:nowrap}
+ .rec-table tbody td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:middle}
+ .rec-table tbody tr{transition:background .15s}
+ .rec-table tbody tr:hover td{background:var(--surface-1)}
+ .rec-table tbody tr:last-child td{border-bottom:0}
+ .cell-idx{font-variant-numeric:tabular-nums;color:var(--text-3) !important;font-size:var(--fs-xs)}
+ .cell-student{color:var(--text) !important;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .score-cell{display:flex;align-items:center;gap:7px;min-width:0}
+ .score-num{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;min-width:30px}
+ .score-of{font-size:var(--fs-2xs);color:var(--text-3);font-variant-numeric:tabular-nums}
+ .mini-bar{flex:1;min-width:26px;max-width:56px;height:4px;border-radius:2px;background:var(--track);overflow:hidden}
+ .mini-bar i{display:block;height:100%;border-radius:2px;background:var(--accent-grad)}
+ .cell-reason .rec-reason{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--text-3);font-size:var(--fs-xs)}
+ .cell-time{font-size:var(--fs-2xs);color:var(--text-3) !important;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+ .table-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 18px;border-top:1px solid var(--border);font-size:var(--fs-2xs);color:var(--text-3)}
+ .empty-row td{padding:0 !important;border:0 !important;background:transparent !important}
+ .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:26px 12px;min-height:118px;text-align:center;color:var(--text-3);font-size:var(--fs-xs)}
+ .empty svg{width:26px;height:26px;opacity:.5;margin-bottom:2px}
+ .empty p{font-size:var(--fs-sm);font-weight:600;color:var(--text-2)}
+ .empty span{max-width:34em;overflow-wrap:anywhere}
+ .site-foot{display:flex;align-items:center;justify-content:space-between;gap:10px 20px;flex-wrap:wrap;margin-top:var(--s2);padding-top:var(--s4);border-top:1px solid var(--border);font-size:var(--fs-xs);color:var(--text-3)}
+ .foot-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+ .foot-sep{opacity:.45}
+ .foot-url{font-family:var(--mono);font-size:var(--fs-2xs);color:var(--text-2);padding:2px 8px;border-radius:6px;background:var(--surface-1);border:1px solid var(--border)}
+ .foot-hint{display:inline-flex;align-items:center;gap:6px}
+ .foot-hint i{width:5px;height:5px;border-radius:50%;background:var(--ok);animation:pulse 2s ease-in-out infinite}
+ .noscript{position:relative;z-index:1;margin:24px 0;padding:14px 18px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-1);font-size:var(--fs-sm);color:var(--text-2)}
+ @keyframes rise{from{opacity:0;transform:translateY(10px)}
+ to{opacity:1;transform:none}
+}
+ @keyframes pulse{0%,100%{opacity:1}
+ 50%{opacity:.35}
+}
+ @media (max-width:1080px){.hero-panel{grid-template-columns:auto minmax(0,1fr)}
+ .hero-facts{grid-column:1 / -1;grid-template-columns:repeat(4,minmax(0,1fr));padding:var(--s4) 0 0;border-left:0;border-top:1px solid var(--border)}
+}
+ @media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}
+}
+ @media (max-width:1024px){.last-update{display:none}
+}
+ @media (max-width:860px){.topbar-in{gap:10px}
+ .topbar-meta{width:100%;margin-left:0;justify-content:space-between;gap:10px}
+}
+ @media (max-width:900px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat-value{font-size:var(--fs-xl)}
+}
+ @media (max-width:820px){.clock{display:none}
+ .brand-sub{display:none}
+}
+ @media (max-width:720px){.panel-head{padding:12px 14px}
+ .panel-title{font-size:var(--fs-sm)}
+ .search{width:100%;margin-left:0}
+ .search input{width:100%}
+ .table-scroll{max-height:none;overflow:visible}
+ .rec-table,.rec-table thead,.rec-table tbody,.rec-table tr,.rec-table td{display:block}
+ .rec-table colgroup{display:none}
+ .rec-table thead{display:none}
+ .rec-table tbody{padding:0 14px 14px}
+ .rec-table tbody tr:not(.empty-row){position:relative;margin-top:10px;padding:10px 12px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md)}
+ .rec-table tbody td{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:4px 0;border:0;font-size:var(--fs-sm)}
+ .rec-table tbody td::before{content:attr(data-label);flex:none;font-size:var(--fs-2xs);font-weight:600;letter-spacing:.06em;color:var(--text-3)}
+ .rec-table tbody tr:not(.empty-row):hover td{background:transparent}
+ .cell-reason{display:block !important}
+ .cell-reason::before{display:block;margin-bottom:2px}
+ .session-reason,.cell-reason .rec-reason{white-space:normal;overflow:visible;text-overflow:clip}
+ .cell-time{font-size:var(--fs-2xs)}
+ .score-cell{flex:1;justify-content:flex-end;max-width:190px}
+ .mini-bar{max-width:90px}
+ .rec-table tbody tr.empty-row{margin-top:10px}
+ .empty-row td{padding:0 !important}
+ .err-scroll{max-height:300px}
+ .center-mobile{text-align:center}
+}
+ @media (max-width:640px){.current-body{padding:14px}
+ .current-top{gap:12px}
+ .avatar{width:42px;height:42px}
+ .current-name{font-size:var(--fs-md)}
+ .score-big{font-size:30px}
+ .table-foot{padding:9px 14px}
+}
+ @media (max-width:560px){.hero-panel{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;gap:var(--s4);padding:var(--s5) var(--s4)}
+ .ring-wrap{width:132px;height:132px}
+ .ring-pct{font-size:32px}
+ .hero-eyebrow{justify-content:center}
+ .hero-count{justify-content:center}
+ .hero-main{width:100%}
+ .hero-facts{grid-template-columns:repeat(2,minmax(0,1fr));text-align:left;gap:10px var(--s4)}
+ .hero-facts dd{font-size:var(--fs-md)}
+ .kpi-grid{gap:var(--s3)}
+ .stat{padding:13px 14px}
+ .stat-value{font-size:var(--fs-xl)}
+ .stat-sub{font-size:var(--fs-2xs)}
+ .demo-banner{padding:10px 12px}
+ .demo-text{flex-basis:100%}
+ .main{padding-top:var(--s4)}
+ .site-foot{flex-direction:column;align-items:flex-start;gap:8px}
+}
+ @media (max-width:400px){.status-pill{padding:5px 9px;font-size:var(--fs-xs)}
+ .conn{font-size:var(--fs-2xs)}
+ .hero-count .count{font-size:30px}
+ .ring-wrap{width:120px;height:120px}
+ .current-score .score-big{font-size:26px}
+}
+ @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+}
+ @media print{:root,:root[data-theme="dark"],:root[data-theme="light"]{--bg:#fff;--text:#111827;--text-2:#374151;--text-3:#6b7280;--border:#e5e7eb;--track:#e5e7eb;--surface-1:#fff;--surface-2:#fff;--surface-solid:#fff;--panel-grad:#fff;--shadow-1:none;--shadow-2:none}
+ body{background:#fff}
+ body::before,body::after,.demo-banner,.theme-toggle,.search,.skip-link,.reason-toggle,.foot-hint{display:none !important}
+ .topbar{position:static;background:#fff}
+ .table-scroll,.err-scroll{max-height:none !important;overflow:visible !important}
+ .panel{box-shadow:none;animation:none;break-inside:avoid}
+ .main{padding-top:12px}
+ .layout{display:block}
+ .col + .col{margin-top:12px}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+<header class="topbar">
+<div class="wrap topbar-in">
+<div class="brand">
+<span class="brand-mark" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true">
+<path d="M3 12h1.2M8 8.5v7M12 5v14M16 9v6M20 11v2"/>
+</svg>
+</span>
+<span>
+<span class="brand-name">WhisperMark</span>
+<span class="brand-sub">2.0 · 阅卷指挥中心</span>
+</span>
+</div>
+<div class="topbar-meta">
+<span class="status-pill" id="statusPill" data-status="idle" role="status" aria-live="polite">
+<i aria-hidden="true"></i><span id="statusText">待机</span>
+</span>
+<span class="conn" title="数据连接方式">
+<i class="dot connecting" id="connDot" aria-hidden="true"></i>
+<span id="connText">连接中…</span>
+</span>
+<span class="last-update" id="lastUpdateWrap" hidden>
+<span class="sep" aria-hidden="true">·</span>
+<span id="lastUpdate">最后更新 --:--:--</span>
+</span>
+<time class="clock" id="clock" aria-label="当前时间">--:--:--</time>
+<button type="button" class="theme-toggle" id="themeBtn" aria-label="切换深浅主题" title="切换主题" aria-pressed="false">
+<svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<circle cx="12" cy="12" r="4"/>
+<path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+</svg>
+<svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5a8.4 8.4 0 1 0 10.7 10.7Z"/>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<main class="wrap main" id="main">
+<div class="demo-banner" id="demoBanner" role="status" aria-live="polite" hidden>
+<span class="demo-badge">演示数据 · DEMO</span>
+<span class="demo-text" id="demoText">当前展示的是示例数据，未连接到运行中的阅卷服务。</span>
+<button type="button" class="btn-ghost" id="demoConnect">尝试连接实时服务</button>
+</div>
+<section class="kpi-grid" aria-label="总体批改进度">
+<div class="panel hero-panel">
+<div class="ring-wrap">
+<svg class="ring" id="ringSvg" viewBox="0 0 120 120" role="img" aria-label="批改进度">
+<defs>
+<linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" class="rg1"/>
+<stop offset="100%" class="rg2"/>
+</linearGradient>
+</defs>
+<circle class="ring-track" cx="60" cy="60" r="52"/>
+<circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>
+</svg>
+<div class="ring-center">
+<span class="ring-pct" id="kPct">—</span>
+<span class="ring-label">完成度</span>
+</div>
+</div>
+<div class="hero-main">
+<div class="hero-eyebrow">整体进度</div>
+<div class="hero-count">
+<span class="count" id="kGraded">0</span>
+<span class="sep" aria-hidden="true">/</span>
+<span class="total" id="kTotal">—</span>
+<span class="unit">份</span>
+</div>
+<div class="progress" role="progressbar" aria-label="批改进度百分比" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+<i id="heroBar"></i>
+</div>
+<div class="hero-sub" id="heroSub">等待阅卷开始</div>
+</div>
+<dl class="hero-facts">
+<div><dt>剩余</dt><dd id="kRemain">—</dd></div>
+<div><dt>预计耗时</dt><dd id="kEta">—</dd></div>
+<div><dt>批改速度</dt><dd id="kRate">—</dd></div>
+<div><dt>预计完成</dt><dd id="kFinish">—</dd></div>
+</dl>
+</div>
+<article class="panel stat">
+<div class="stat-row">
+<span class="stat-label">平均分</span>
+<svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<path d="M5 19v-6M12 19V5M19 19v-9"/>
+</svg>
+</div>
+<div class="stat-value"><span id="statAvg">—</span><span class="stat-unit" id="statAvgUnit"></span></div>
+<div class="stat-sub" id="statAvgSub">暂无已批记录</div>
+</article>
+<article class="panel stat">
+<div class="stat-row">
+<span class="stat-label">最高分</span>
+<svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/>
+<path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3"/>
+<path d="M12 13v5M9 21h6"/>
+</svg>
+</div>
+<div class="stat-value"><span id="statMax">—</span><span class="stat-unit" id="statMaxUnit"></span></div>
+<div class="stat-sub" id="statMaxSub">暂无数据</div>
+</article>
+<article class="panel stat">
+<div class="stat-row">
+<span class="stat-label">异常数</span>
+<svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<path d="M12 3.6 2.9 19.4h18.2L12 3.6Z"/>
+<path d="M12 9.6v4.6"/>
+<circle cx="12" cy="17.1" r=".9" fill="currentColor" stroke="none"/>
+</svg>
+</div>
+<div class="stat-value"><span id="statErr">0</span></div>
+<div class="stat-sub" id="statErrSub">运行平稳</div>
+</article>
+<article class="panel stat">
+<div class="stat-row">
+<span class="stat-label">运行时长</span>
+<svg class="stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+<circle cx="12" cy="12" r="8.5"/>
+<path d="M12 7.3V12l3 1.9"/>
+</svg>
+</div>
+<div class="stat-value"><span id="statElapsed">—</span></div>
+<div class="stat-sub" id="statElapsedSub">尚未开始</div>
+</article>
+</section>
+<div class="layout">
+<div class="col">
+<section class="panel current-panel" aria-label="当前答卷">
+<div class="panel-head">
+<h2 class="panel-title">当前答卷</h2>
+<span class="live-tag" id="curLive" data-status="idle"><i aria-hidden="true"></i><span id="curLiveText">待机</span></span>
+</div>
+<div class="current-body">
+<div class="current-top">
+<div class="avatar is-empty" id="curAvatar" aria-hidden="true">—</div>
+<div class="current-id">
+<div class="current-name is-empty" id="curName">等待下一份答卷…</div>
+<div class="chip-row" id="curChips"></div>
+</div>
+<div class="current-score">
+<div class="score-big" id="curScore">—</div>
+<div class="score-max" id="curMax">—</div>
+<span class="conf" id="curConf" hidden>—</span>
+</div>
+</div>
+<div class="reason">
+<div class="reason-head">
+<span>评分理由</span>
+<button type="button" class="reason-toggle" id="reasonToggle" aria-expanded="false" aria-controls="curReason" hidden>展开</button>
+</div>
+<p class="reason-text is-clamped" id="curReason">开始阅卷后，这里会实时显示当前答卷的评分理由。</p>
+</div>
+</div>
+</section>
+<section class="panel records-panel" aria-label="最近批改记录">
+<div class="panel-head">
+<h2 class="panel-title">最近批改记录</h2>
+<span class="panel-hint" id="recHint">共 0 条</span>
+<div class="search">
+<svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+<circle cx="11" cy="11" r="6.2"/>
+<path d="m15.8 15.8 4 4"/>
+</svg>
+<input type="search" id="recSearch" placeholder="筛选学生姓名" aria-label="按学生姓名筛选批改记录" autocomplete="off" spellcheck="false">
+<button type="button" class="clear" id="recClear" aria-label="清除筛选" hidden>×</button>
+</div>
+</div>
+<div class="table-scroll">
+<table class="rec-table">
+<caption class="sr-only">最近批改记录，按时间倒序显示</caption>
+<colgroup>
+<col class="c-idx"><col class="c-name"><col class="c-score"><col class="c-conf"><col class="c-reason"><col class="c-time">
+</colgroup>
+<thead>
+<tr>
+<th scope="col">#</th>
+<th scope="col">学生</th>
+<th scope="col">得分</th>
+<th scope="col">置信度</th>
+<th scope="col">理由</th>
+<th scope="col">时间</th>
+</tr>
+</thead>
+<tbody id="recBody"></tbody>
+</table>
+</div>
+<div class="table-foot">
+<span id="recFoot">显示最近 0 条</span>
+<span>按时间倒序 · 实时刷新</span>
+</div>
+</section>
+</div>
+<div class="col">
+<section class="panel dist-panel" aria-label="分数分布">
+<div class="panel-head">
+<h2 class="panel-title">分数分布</h2>
+<span class="panel-hint" id="distHint">按满分五等分</span>
+</div>
+<div class="dist-body" id="distChart"></div>
+</section>
+<section class="panel errors-panel" aria-label="异常时间线">
+<div class="panel-head">
+<h2 class="panel-title">异常时间线</h2>
+<span class="panel-count" id="errCount">0</span>
+</div>
+<div class="err-scroll">
+<ul class="err-list" id="errList"></ul>
+</div>
+</section>
+</div>
+</div>
+<footer class="site-foot">
+<div class="foot-meta">
+<span>WhisperMark 2.0</span>
+<span class="foot-sep" aria-hidden="true">·</span>
+<span>v2.0.0</span>
+<span class="foot-sep" aria-hidden="true">·</span>
+<span class="foot-url" id="footUrl" title="默认 http://127.0.0.1:8321，端口顺延时显示实际地址">http://127.0.0.1:8321</span>
+<span class="foot-sep" aria-hidden="true">·</span>
+<span>本地离线可用</span>
+</div>
+<div class="foot-hint"><i aria-hidden="true"></i><span>数据实时更新 · SSE 推送 · 刷新页面不会中断阅卷</span></div>
+</footer>
+</main>
+<noscript><div class="wrap noscript">本页面需要启用 JavaScript 才能显示实时阅卷监控数据。</div></noscript>
+<script>
+(function () {
+'use strict';
+var CIRC = 2 * Math.PI * 52;              // 环形进度周长（r=52）
+var THEME_KEY = 'wm-monitor-theme';
+var REC_LIMIT = 12;                       // 表格最多显示行数
+var ERR_LIMIT = 30;                       // 时间线最多显示条数
+var HAS_QUERY_DEMO = new URLSearchParams(window.location.search).get('demo') === '1';
+var STATUS = {
+idle: '待机', running: '批改中', paused: '已暂停',
+done: '已完成', error: '异常', stopped: '已停止'
+};
+var CONF = { high: '高置信', medium: '中置信', low: '低置信', error: '异常' };
+var PLATFORMS = { zhixue: '智学网', haoyuejuan: '阅小二', yuexiaoer: '阅小二' };
+var ICO = {
+check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.2 2.6 2.6L16 9.6"/></svg>',
+chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15v-3.5M12.5 15V7M17 15v-5.5"/></svg>',
+inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5 6.6 5h10.8L20 13.5V19H4v-5.5Z"/><path d="M4 13.5h4.4l1 2h5.2l1-2H20"/></svg>'
+};
+var state = null;
+var mode = 'connecting';
+var live = false;
+var pinnedDemo = HAS_QUERY_DEMO;
+var es = null;
+var sseAttempt = 0;
+var probeAttempt = 0;
+var retryTimer = null;
+var pollTimer = null;
+var probeTimer = null;
+var recQuery = '';
+var reasonExpanded = false;
+var firstRing = true;
+var tickCount = 0;
+function $(id) { return document.getElementById(id); }
+var el = {
+statusPill: $('statusPill'), statusText: $('statusText'),
+connDot: $('connDot'), connText: $('connText'),
+lastUpdateWrap: $('lastUpdateWrap'), lastUpdate: $('lastUpdate'),
+clock: $('clock'), themeBtn: $('themeBtn'),
+demoBanner: $('demoBanner'), demoText: $('demoText'), demoConnect: $('demoConnect'),
+ringSvg: $('ringSvg'), ringFill: $('ringFill'), kPct: $('kPct'),
+kGraded: $('kGraded'), kTotal: $('kTotal'), heroBar: $('heroBar'),
+progressBar: $('progressBar'), heroSub: $('heroSub'),
+kRemain: $('kRemain'), kEta: $('kEta'), kRate: $('kRate'), kFinish: $('kFinish'),
+statAvg: $('statAvg'), statAvgUnit: $('statAvgUnit'), statAvgSub: $('statAvgSub'),
+statMax: $('statMax'), statMaxUnit: $('statMaxUnit'), statMaxSub: $('statMaxSub'),
+statErr: $('statErr'), statErrSub: $('statErrSub'),
+statElapsed: $('statElapsed'), statElapsedSub: $('statElapsedSub'),
+curLive: $('curLive'), curLiveText: $('curLiveText'), curAvatar: $('curAvatar'),
+curName: $('curName'), curChips: $('curChips'), curScore: $('curScore'),
+curMax: $('curMax'), curConf: $('curConf'), curReason: $('curReason'),
+reasonToggle: $('reasonToggle'),
+distChart: $('distChart'), distHint: $('distHint'),
+errList: $('errList'), errCount: $('errCount'),
+recBody: $('recBody'), recHint: $('recHint'), recFoot: $('recFoot'),
+recSearch: $('recSearch'), recClear: $('recClear')
+};
+function esc(v) {
+return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) {
+return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+});
+}
+function toNum(v, dflt) {
+var n = Number(v);
+return (v === null || v === undefined || v === '' || isNaN(n)) ? dflt : n;
+}
+function clamp(n, lo, hi) { return n < lo ? lo : (n > hi ? hi : n); }
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function hhmmss(d) { return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()); }
+function hhmm(d) { return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function ymdhms(d) {
+return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + hhmmss(d);
+}
+function parseTime(v) {
+if (!v) return null;
+var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(String(v));
+if (!m) return null;
+var d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+return isNaN(d.getTime()) ? null : d;
+}
+function num(v, digits) {
+if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '—';
+var n = Number(v);
+if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+var d = digits === undefined ? 1 : digits;
+return n.toFixed(d).replace(/0+$/, '').replace(/\.$/, '');
+}
+function fmtDuration(sec) {
+if (!isFinite(sec) || sec < 0) return '—';
+var s = Math.floor(sec), m = Math.floor(s / 60), h = Math.floor(m / 60);
+if (h > 0) return h + ':' + pad2(m % 60) + ':' + pad2(s % 60);
+return m + ':' + pad2(s % 60);
+}
+function humanize(sec) {
+if (!isFinite(sec) || sec <= 0) return '—';
+if (sec < 60) return '不足 1 分钟';
+var min = Math.round(sec / 60);
+if (min < 60) return '约 ' + min + ' 分钟';
+var h = Math.floor(min / 60), rest = min % 60;
+return '约 ' + h + ' 小时' + (rest ? ' ' + rest + ' 分钟' : '');
+}
+function maxScoreOf(recs) {
+var mx = 0;
+for (var i = 0; i < recs.length; i++) {
+if (!recs[i]) continue;
+var v = toNum(recs[i].max_score, 0);
+if (v > mx) mx = v;
+}
+return mx;
+}
+function platformName(v) {
+if (!v) return '';
+return PLATFORMS[String(v).toLowerCase()] || String(v);
+}
+function emptyHtml(icon, title, sub) {
+return '<div class="empty">' + icon + '<p>' + esc(title) + '</p>' +
+(sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>';
+}
+function isTyping(target) {
+if (!target || !target.tagName) return false;
+var tag = target.tagName.toLowerCase();
+return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+}
+function themeNow() {
+return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+function applyTheme(t) {
+document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+el.themeBtn.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+el.themeBtn.setAttribute('aria-label', t === 'light' ? '切换到深色主题' : '切换到浅色主题');
+el.themeBtn.title = t === 'light' ? '切换到深色主题' : '切换到浅色主题';
+var meta = document.querySelector('meta[name="theme-color"]');
+if (meta) meta.setAttribute('content', t === 'light' ? '#eef1f8' : '#070a12');
+}
+function toggleTheme() {
+var next = themeNow() === 'light' ? 'dark' : 'light';
+try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+applyTheme(next);
+}
+function setMode(m, note) {
+var map = { connecting: '连接中…', sse: 'SSE 已连接', poll: '轮询', demo: '演示数据' };
+if (mode === m && !note) return;
+mode = m;
+el.connDot.className = 'dot ' + m;
+el.connText.textContent = note || map[m] || '—';
+el.lastUpdateWrap.hidden = (m === 'demo');
+document.body.setAttribute('data-mode', m);
+}
+function fetchState() {
+return new Promise(function (resolve, reject) {
+var ctrl = window.AbortController ? new AbortController() : null;
+var timer = setTimeout(function () {
+if (ctrl) { ctrl.abort(); } else { reject(new Error('timeout')); }
+}, 4000);
+var opts = { cache: 'no-store', headers: { Accept: 'application/json' } };
+if (ctrl) opts.signal = ctrl.signal;
+fetch('/api/state', opts).then(function (r) {
+if (!r.ok) throw new Error('HTTP ' + r.status);
+return r.json();
+}).then(function (data) {
+clearTimeout(timer);
+if (data && typeof data === 'object' && !Array.isArray(data)) resolve(data);
+else reject(new Error('bad payload'));
+}).catch(function (err) {
+clearTimeout(timer);
+reject(err);
+});
+});
+}
+function closeSse() {
+if (es) {
+try { es.close(); } catch (e) {}
+es = null;
+}
+}
+function stopPoll() {
+if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+function stopRetry() {
+if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+}
+function stopProbe() {
+if (probeTimer) { clearTimeout(probeTimer); probeTimer = null; }
+}
+function hideDemo() {
+if (!el.demoBanner.hidden) el.demoBanner.hidden = true;
+document.body.classList.remove('is-demo');
+}
+function onLiveData(s) {
+if (!s || typeof s !== 'object') return;
+live = true;
+hideDemo();
+state = s;
+render(s);
+}
+function startPoll(note) {
+if (pollTimer) return;
+setMode('poll', note);
+pollTimer = setInterval(function () {
+fetchState().then(function (s) {
+onLiveData(s);
+if (!es && live) setMode('poll');
+}).catch(function () {
+if (live) setMode('poll', '连接中断 · 轮询重试中');
+});
+}, 2000);
+}
+function scheduleSseRetry() {
+if (retryTimer || pinnedDemo) return;
+var delay = Math.min(15000, 1000 * Math.pow(2, sseAttempt));
+sseAttempt = Math.min(sseAttempt + 1, 8);
+retryTimer = setTimeout(function () {
+retryTimer = null;
+openSse();
+}, delay);
+}
+function openSse() {
+if (pinnedDemo) return;
+if (!('EventSource' in window)) { startPoll('轮询'); return; }
+closeSse();
+try {
+es = new EventSource('/events');
+} catch (e) {
+es = null;
+startPoll('轮询');
+return;
+}
+es.onopen = function () {
+sseAttempt = 0;
+stopPoll();
+setMode('sse');
+};
+es.onmessage = function (ev) {
+var data;
+try { data = JSON.parse(ev.data); } catch (e) { return; }
+if (!data || typeof data !== 'object') return;
+onLiveData(data);
+setMode('sse');
+};
+es.onerror = function () {
+closeSse();
+if (!live) { startPoll('轮询'); } else { startPoll('轮询兜底中'); }
+scheduleSseRetry();
+};
+}
+function scheduleProbe() {
+if (probeTimer || pinnedDemo) return;
+var delay = Math.min(15000, 1000 * Math.pow(2, probeAttempt));
+probeAttempt = Math.min(probeAttempt + 1, 8);
+probeTimer = setTimeout(function () {
+probeTimer = null;
+if (live || pinnedDemo) return;
+fetchState().then(function (s) {
+probeAttempt = 0;
+onLiveData(s);
+setMode('poll');
+openSse();
+}).catch(function () {
+if (!live) scheduleProbe();
+});
+}, delay);
+}
+function connect() {
+setMode('connecting');
+fetchState().then(function (s) {
+sseAttempt = 0;
+onLiveData(s);
+setMode('poll');
+openSse();
+}).catch(function () {
+if (pinnedDemo) return;
+if (!live) {
+showDemo('auto');
+scheduleProbe();
+}
+});
+}
+function manualConnect() {
+if (el.demoConnect.disabled) return;
+pinnedDemo = false;
+el.demoConnect.disabled = true;
+el.demoText.textContent = '正在尝试连接阅卷服务…';
+probeAttempt = 0;
+sseAttempt = 0;
+fetchState().then(function (s) {
+el.demoConnect.disabled = false;
+onLiveData(s);
+setMode('poll');
+openSse();
+}).catch(function () {
+el.demoConnect.disabled = false;
+var here = window.location.protocol === 'file:' ? '当前以本地文件方式打开' : window.location.origin;
+el.demoText.textContent = '未能连接（' + here + ' 上未找到阅卷 API）。请运行 python main.py grade 后再试。';
+scheduleProbe();
+});
+}
+function tick() {
+var d = new Date();
+el.clock.textContent = hhmmss(d);
+tickCount++;
+if (state && tickCount % 10 === 0) renderTiming(state);
+}
+function render(s) {
+var status = String(s.status || 'idle');
+el.statusPill.setAttribute('data-status', status);
+el.statusText.textContent = STATUS[status] || status || '待机';
+var total = Math.max(0, toNum(s.total, 0));
+var graded = Math.max(0, toNum(s.graded, 0));
+var pct = total > 0 ? clamp(graded / total * 100, 0, 100) : 0;
+renderRing(pct, total, graded);
+renderTiming(s);
+renderKpiStats(s);
+renderCurrent(s, status);
+renderDist(s);
+renderErrors(s);
+renderRecords(s);
+var upd = parseTime(s.updated_at);
+el.lastUpdate.textContent = '最后更新 ' + (upd ? hhmmss(upd) : hhmmss(new Date()));
+}
+function renderRing(pct, total, graded) {
+var offset = CIRC * (1 - (total > 0 ? pct : 0) / 100);
+if (firstRing) {
+firstRing = false;
+requestAnimationFrame(function () { el.ringFill.style.strokeDashoffset = String(offset); });
+} else {
+el.ringFill.style.strokeDashoffset = String(offset);
+}
+el.kPct.textContent = total > 0 ? num(pct, 1) + '%' : '—';
+el.kGraded.textContent = String(graded);
+el.kTotal.textContent = total > 0 ? String(total) : '—';
+el.heroBar.style.width = (total > 0 ? pct : 0) + '%';
+el.progressBar.setAttribute('aria-valuenow', String(Math.round(total > 0 ? pct : 0)));
+el.ringSvg.setAttribute('aria-label', total > 0
+? '批改进度 ' + num(pct, 1) + '%，已批 ' + graded + ' 份，共 ' + total + ' 份'
+: '批改进度：尚未开始');
+}
+function computeEta(status, total, graded, start, elapsed) {
+var out = { duration: '—', finish: '—', rate: '—' };
+if (status === 'done') { out.duration = '已完成'; return out; }
+if (status === 'paused') { out.duration = '已暂停'; return out; }
+if (status === 'stopped') { out.duration = '已停止'; return out; }
+if (status !== 'running' || !(total > 0)) return out;
+if (!start || elapsed < 10 || graded < 2) { out.duration = '计算中…'; return out; }
+var rate = graded / elapsed;               // 份/秒
+var remain = Math.max(total - graded, 0);
+if (remain === 0) { out.duration = '即将完成'; out.finish = hhmm(new Date()); out.rate = num(rate * 60, 1) + ' 份/分'; return out; }
+var secs = remain / rate;
+if (!isFinite(secs) || secs <= 0) return out;
+out.duration = humanize(secs);
+out.finish = hhmm(new Date(Date.now() + secs * 1000));
+out.rate = num(rate * 60, 1) + ' 份/分';
+return out;
+}
+function renderTiming(s) {
+var status = String(s.status || 'idle');
+var total = Math.max(0, toNum(s.total, 0));
+var graded = Math.max(0, toNum(s.graded, 0));
+var start = parseTime(s.started_at);
+var elapsed = start ? (Date.now() - start.getTime()) / 1000 : -1;
+var eta = computeEta(status, total, graded, start, elapsed);
+el.kRemain.textContent = total > 0
+? Math.max(total - graded, 0) + ' 份'
+: (graded > 0 ? '已批 ' + graded + ' 份' : '—');
+el.kEta.textContent = eta.duration;
+el.kRate.textContent = eta.rate;
+el.kFinish.textContent = eta.finish;
+el.heroSub.textContent = (function () {
+if (status === 'running') return '实时批改中 · 已运行 ' + (elapsed >= 0 ? fmtDuration(elapsed) : '—');
+if (status === 'paused') return '已暂停 · 可随时恢复';
+if (status === 'done') return '全部完成' + (elapsed >= 0 && elapsed > 0 ? ' · 用时 ' + fmtDuration(elapsed) : '');
+if (status === 'error') return '发生异常，请查看异常时间线';
+if (status === 'stopped') return '已停止';
+return '等待阅卷开始';
+})();
+el.statElapsed.textContent = elapsed >= 0 ? fmtDuration(elapsed) : '—';
+el.statElapsedSub.textContent = start ? ('开始于 ' + hhmmss(start)) : '尚未开始';
+}
+function renderKpiStats(s) {
+var recs = Array.isArray(s.records) ? s.records : [];
+var maxScore = maxScoreOf(recs);
+var sum = 0, n = 0, best = null;
+for (var i = 0; i < recs.length; i++) {
+var r = recs[i];
+if (!r) continue;
+var sc = toNum(r.score, NaN);
+if (!isFinite(sc)) continue;
+sum += sc;
+n++;
+if (!best || sc > toNum(best.score, -Infinity)) best = r;
+}
+var avg = n > 0 ? sum / n : null;
+var unitText = maxScore > 0 ? '/ ' + num(maxScore) : '';
+el.statAvg.textContent = avg === null ? '—' : num(avg, 1);
+el.statAvgUnit.textContent = avg === null ? '' : unitText;
+el.statAvgSub.textContent = n > 0 ? '基于 ' + n + ' 条已批记录' : '暂无已批记录';
+el.statMax.textContent = best ? num(best.score, 1) : '—';
+el.statMaxUnit.textContent = best ? (maxScore > 0 ? '/ ' + num(maxScore) : '') : '';
+var bestName = best ? String(best.student_name || '未知学生') : '';
+el.statMaxSub.textContent = best ? (bestName + ' · ' + (parseTime(best.timestamp) ? hhmmss(parseTime(best.timestamp)) : '—')) : '暂无数据';
+el.statMaxSub.title = best ? (bestName + ' ' + String(best.score) + ' / ' + String(best.max_score || maxScore)) : '';
+var errs = Array.isArray(s.errors) ? s.errors : [];
+var fatal = 0;
+for (var j = 0; j < errs.length; j++) { if (errs[j] && errs[j].fatal) fatal++; }
+el.statErr.textContent = String(errs.length);
+el.statErrSub.textContent = errs.length === 0
+? '运行平稳'
+: (fatal > 0 ? fatal + ' 条严重影响批改' : '均为非致命异常');
+}
+function renderCurrent(s, status) {
+var name = String(s.current_student || '');
+var recs = Array.isArray(s.records) ? s.records : [];
+var match = null;
+if (name) {
+for (var i = recs.length - 1; i >= 0; i--) {
+if (recs[i] && String(recs[i].student_name || '') === name) { match = recs[i]; break; }
+}
+}
+var latest = recs.length ? recs[recs.length - 1] : null;
+var rec = match || latest || null;
+var maxScore = (rec ? toNum(rec.max_score, 0) : 0) || maxScoreOf(recs);
+el.curLive.setAttribute('data-status', status);
+el.curLiveText.textContent = status === 'running' ? (document.body.getAttribute('data-mode') === 'demo' ? '演示数据' : '实时接收中') : (STATUS[status] || '待机');
+if (name) {
+el.curAvatar.textContent = Array.from(name)[0] || '—';
+el.curAvatar.classList.remove('is-empty');
+el.curName.textContent = name;
+el.curName.classList.remove('is-empty');
+} else {
+el.curAvatar.textContent = '—';
+el.curAvatar.classList.add('is-empty');
+el.curName.textContent = status === 'idle' ? '等待下一份答卷…' : '暂无正在批改的答卷';
+el.curName.classList.add('is-empty');
+}
+var chips = [];
+if (s.platform) chips.push('<span class="chip"><b>平台</b>' + esc(platformName(s.platform)) + '</span>');
+if (s.question_id) chips.push('<span class="chip"><b>题目</b>' + esc(s.question_id) + '</span>');
+if (s.rubric_version) chips.push('<span class="chip"><b>细则</b>' + esc(s.rubric_version) + '</span>');
+el.curChips.innerHTML = chips.join('');
+var score = toNum(s.current_score, NaN);
+if (!isFinite(score) && rec) score = toNum(rec.score, NaN);
+el.curScore.textContent = isFinite(score) ? num(score, 1) : '—';
+el.curMax.textContent = maxScore > 0 ? '/ ' + num(maxScore) : '—';
+var conf = rec ? String(rec.confidence || '') : '';
+var confKey = conf.toLowerCase();
+if (!name || !conf) {
+el.curConf.hidden = true;
+el.curConf.className = 'conf';
+el.curConf.textContent = '';
+} else {
+el.curConf.hidden = false;
+el.curConf.className = 'conf ' + (CONF[confKey] ? confKey : '');
+el.curConf.textContent = CONF[confKey] || conf;
+el.curConf.title = '置信度：' + (CONF[confKey] || conf);
+}
+var reason = String(s.current_reasoning || (rec ? rec.reasoning : '') || '');
+if (!reason) {
+reason = name ? '暂无评分理由。' : '开始阅卷后，这里会实时显示当前答卷的评分理由。';
+}
+el.curReason.textContent = reason;
+var canToggle = reason.length > 72;
+el.reasonToggle.hidden = !canToggle;
+if (!canToggle) reasonExpanded = false;
+el.curReason.classList.toggle('is-clamped', canToggle && !reasonExpanded);
+el.reasonToggle.textContent = reasonExpanded ? '收起' : '展开';
+el.reasonToggle.setAttribute('aria-expanded', reasonExpanded ? 'true' : 'false');
+}
+function renderDist(s) {
+var recs = Array.isArray(s.records) ? s.records : [];
+var maxScore = maxScoreOf(recs);
+var bins = [0, 0, 0, 0, 0];
+var n = 0;
+if (maxScore > 0) {
+for (var i = 0; i < recs.length; i++) {
+var r = recs[i];
+if (!r) continue;
+var sc = toNum(r.score, NaN);
+var mx = toNum(r.max_score, 0) || maxScore;
+if (!isFinite(sc) || !(mx > 0)) continue;
+var idx = clamp(Math.floor(clamp(sc / mx, 0, 1) * 5), 0, 4);
+bins[idx]++;
+n++;
+}
+}
+if (n === 0) {
+el.distChart.innerHTML = emptyHtml(ICO.chart, '暂无分布数据', '批改记录积累后自动生成分数直方图');
+el.distHint.textContent = '按满分五等分';
+return;
+}
+var W = 320, H = 158, left = 26, right = 312, base = 112, top = 22;
+var plotH = base - top;
+var slot = (right - left) / 5;
+var barW = 34;
+var maxCount = Math.max.apply(null, bins);
+var maxY = Math.max(1, maxCount);
+var parts = [];
+var ranges = [];
+for (var k = 0; k < 5; k++) {
+var lo = maxScore * k / 5, hi = maxScore * (k + 1) / 5;
+ranges.push(num(lo, 1) + '–' + num(hi, 1));
+}
+var aria = '分数分布（共 ' + n + ' 条）：' + bins.map(function (c, i) {
+return ranges[i] + ' 分 ' + c + ' 条';
+}).join('；');
+parts.push('<svg class="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(aria) + '">');
+parts.push('<defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">' +
+'<stop offset="0%" class="stop-top"/><stop offset="100%" class="stop-bottom"/></linearGradient></defs>');
+[0.5, 1].forEach(function (f) {
+var y = base - plotH * f;
+parts.push('<line class="grid" x1="' + left + '" y1="' + y + '" x2="' + right + '" y2="' + y + '"/>');
+parts.push('<text class="axis-num" x="' + (left - 6) + '" y="' + (y + 3) + '" text-anchor="end">' +
+Math.round(maxY * f) + '</text>');
+});
+parts.push('<line class="base" x1="' + left + '" y1="' + base + '" x2="' + right + '" y2="' + base + '"/>');
+for (var b = 0; b < 5; b++) {
+var h = maxCount > 0 ? (bins[b] / maxCount) * (plotH - 6) : 0;
+var bh = bins[b] > 0 ? Math.max(h, 3) : 2;
+var x = left + slot * b + (slot - barW) / 2;
+var y = base - bh;
+var tip = ranges[b] + ' 分：' + bins[b] + ' 份（' + num(n > 0 ? bins[b] / n * 100 : 0, 1) + '%）';
+parts.push('<rect class="bar' + (bins[b] ? '' : ' zero') + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+'" width="' + barW + '" height="' + bh.toFixed(1) + '" rx="6"><title>' + esc(tip) + '</title></rect>');
+parts.push('<text class="bar-num" x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 5).toFixed(1) +
+'" text-anchor="middle">' + bins[b] + '</text>');
+parts.push('<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (base + 17) + '" text-anchor="middle">' +
+esc(ranges[b]) + '</text>');
+}
+parts.push('</svg>');
+el.distChart.innerHTML = parts.join('');
+el.distHint.textContent = '满分 ' + num(maxScore) + ' 分 · 共 ' + n + ' 条';
+}
+function renderErrors(s) {
+var errors = Array.isArray(s.errors) ? s.errors.slice().reverse() : [];
+el.errCount.textContent = String(errors.length);
+if (errors.length === 0) {
+el.errList.innerHTML = '<li>' + emptyHtml(ICO.check, '暂无异常', '批改过程平稳，未记录到错误') + '</li>';
+return;
+}
+el.errList.innerHTML = errors.slice(0, ERR_LIMIT).map(function (e) {
+if (!e) return '';
+var fatal = !!e.fatal;
+return '<li class="err-item' + (fatal ? ' fatal' : '') + '">' +
+'<span class="err-rail"><i class="err-dot" aria-hidden="true"></i></span>' +
+'<div class="err-body">' +
+'<p class="err-msg">' + esc(e.message || '未知异常') + '</p>' +
+'<div class="err-meta">' +
+'<time class="err-time">' + esc(e.time || '—') + '</time>' +
+'<span class="err-tag ' + (fatal ? 'fatal' : 'warn') + '">' + (fatal ? '严重' : '警告') + '</span>' +
+'</div></div></li>';
+}).join('');
+}
+function renderRecords(s) {
+var recs = Array.isArray(s.records) ? s.records : [];
+var sorted = recs.slice().reverse();       // 服务端按追加顺序，倒序显示最新
+var q = recQuery.toLowerCase();
+var filtered = q
+? sorted.filter(function (r) { return String((r && r.student_name) || '').toLowerCase().indexOf(q) >= 0; })
+: sorted;
+var shown = filtered.slice(0, REC_LIMIT);
+var maxScore = maxScoreOf(recs);
+el.recHint.textContent = '共 ' + recs.length + ' 条';
+if (recs.length === 0) {
+el.recBody.innerHTML = '<tr class="empty-row"><td colspan="6">' +
+emptyHtml(ICO.inbox, '还没有批改记录', '开始阅卷后，每份答卷的得分与置信度会实时出现在这里') + '</td></tr>';
+el.recFoot.textContent = '显示最近 0 条 · 共 0 条';
+return;
+}
+if (shown.length === 0) {
+el.recBody.innerHTML = '<tr class="empty-row"><td colspan="6">' +
+emptyHtml(ICO.inbox, '没有匹配的记录', '没有学生姓名包含「' + recQuery + '」，试试其他关键词') + '</td></tr>';
+el.recFoot.textContent = '匹配 0 条 · 共 ' + recs.length + ' 条';
+return;
+}
+el.recBody.innerHTML = shown.map(function (r) {
+if (!r) return '';
+var score = toNum(r.score, NaN);
+var mx = toNum(r.max_score, 0) || maxScore;
+var ratio = (isFinite(score) && mx > 0) ? clamp(score / mx * 100, 0, 100) : 0;
+var confKey = String(r.confidence || '').toLowerCase();
+var confCls = CONF[confKey] ? confKey : '';
+var confLabel = CONF[confKey] || (r.confidence ? String(r.confidence) : '—');
+var t = parseTime(r.timestamp);
+var idx = (r.index === null || r.index === undefined) ? '—' : r.index;
+return '<tr>' +
+'<td class="cell-idx" data-label="序号">#' + esc(idx) + '</td>' +
+'<td class="cell-student" data-label="学生">' + esc(r.student_name || '—') + '</td>' +
+'<td class="cell-score" data-label="得分"><span class="score-cell">' +
+'<span class="score-num">' + (isFinite(score) ? num(score, 1) : '—') + '</span>' +
+'<span class="score-of">/ ' + (mx > 0 ? num(mx) : '—') + '</span>' +
+'<span class="mini-bar" aria-hidden="true"><i style="width:' + ratio.toFixed(1) + '%"></i></span>' +
+'</span></td>' +
+'<td class="cell-conf" data-label="置信度"><span class="conf ' + confCls + '">' + esc(confLabel) + '</span></td>' +
+'<td class="cell-reason" data-label="理由"><span class="rec-reason" title="' + esc(r.reasoning || '') + '">' +
+esc(r.reasoning || '—') + '</span></td>' +
+'<td class="cell-time" data-label="时间" title="' + esc(r.timestamp || '') + '">' +
+(t ? hhmmss(t) : '—') + '</td>' +
+'</tr>';
+}).join('');
+el.recFoot.textContent = q
+? '匹配 ' + filtered.length + ' 条 · 显示前 ' + shown.length + ' 条 · 共 ' + recs.length + ' 条'
+: '显示最近 ' + shown.length + ' 条 · 共 ' + recs.length + ' 条';
+}
+function buildDemo() {
+var now = Date.now();
+var names = ['李同学', '王同学', '刘同学', '陈同学', '杨同学', '赵同学', '黄同学', '周同学', '吴同学', '徐同学', '孙同学', '张同学'];
+var scores = [15.5, 11, 18, 6.5, 13, 9, 0, 20, 16.5, 12, 14.5, 13.5];
+var confs = ['high', 'medium', 'high', 'low', 'high', 'medium', 'error', 'high', 'medium', 'high', 'high', 'high'];
+var reasons = [
+'第（1）问设元、列方程均正确（5 分）；第（2）问配方过程规范，求出两根（6 分）；第（3）问未讨论舍去负根，扣 1.5 分。',
+'第（1）问列式正确（5 分）；第（2）问判别式计算失误，结论偏差（4 分）；第（3）问思路正确但未完成（2 分）。',
+'三问解答完整，采分点全部命中；仅第（3）问未写检验步骤，扣 2 分。',
+'仅第（1）问设元列式正确（5 分）；第（2）问方程变形错误，后续结论不成立（1.5 分）。',
+'第（1）（2）问共得 11 分；第（3）问分类讨论遗漏一种情形，扣 2 分。',
+'第（1）问 5 分；第（2）问结果正确但缺少关键推理步骤，扣 3 分；第（3）问未作答。',
+'答卷图片模糊，手写内容无法辨认，AI 无法给出可信评分，已标记异常等待人工复核。',
+'三问全部正确，步骤规范、结论完整，采分点无遗漏。',
+'第（1）（2）问满分；第（3）问最值求法正确但未验证取等条件，扣 3.5 分。',
+'第（1）问 5 分，第（2）问 5 分，第（3）问仅写出结论得 2 分。',
+'采分点命中 6/8，第（2）问计算跳步扣 2 分，第（3）问结论正确。',
+'第（1）问设未知数、列方程均正确，得 5 分；第（2）问判别式化简正确，最后一步代入出错，得 3 分；第（3）问思路正确、结论完整，得 5.5 分。整体过程清晰，建议加强计算复核。'
+];
+var records = [];
+for (var i = 0; i < 12; i++) {
+records.push({
+index: 117 + i,
+student_name: names[i],
+score: scores[i],
+max_score: 20,
+reasoning: reasons[i],
+confidence: confs[i],
+rubric_version: '1.1',
+timestamp: ymdhms(new Date(now - (12 - i) * 11000))
+});
+}
+return {
+status: 'running',
+platform: 'zhixue',
+question_id: '数学第15题',
+rubric_version: '1.1',
+total: 200,
+graded: 128,
+current_student: '张同学',
+current_score: 13.5,
+current_reasoning: reasons[11],
+errors: [
+{ time: hhmmss(new Date(now - 6 * 60 * 1000)), message: '第 96 份答卷 AI 返回 JSON 解析失败，已自动重试（1/3）并成功', fatal: false },
+{ time: hhmmss(new Date(now - 2 * 60 * 1000)), message: '答题卡图片加载超时（第 129 份），重试后成功，未影响批改', fatal: false }
+],
+records: records,
+started_at: ymdhms(new Date(now - 128 * 5400)),
+updated_at: ymdhms(new Date(now)),
+percentage: 64,
+remaining: 72
+};
+}
+function showDemo(kind) {
+live = false;
+el.demoBanner.hidden = false;
+document.body.classList.add('is-demo');
+el.demoText.textContent = kind === 'pinned'
+? '已通过 ?demo=1 进入演示模式，以下为示例数据。接入阅卷服务后可切换为实时数据。'
+: '未检测到运行中的阅卷服务，以下为示例数据；服务启动后会自动切换为实时数据。';
+state = buildDemo();
+setMode('demo');
+render(state);
+}
+function bindEvents() {
+el.themeBtn.addEventListener('click', toggleTheme);
+el.demoConnect.addEventListener('click', manualConnect);
+el.reasonToggle.addEventListener('click', function () {
+reasonExpanded = !reasonExpanded;
+el.curReason.classList.toggle('is-clamped', !reasonExpanded);
+el.reasonToggle.textContent = reasonExpanded ? '收起' : '展开';
+el.reasonToggle.setAttribute('aria-expanded', reasonExpanded ? 'true' : 'false');
+});
+el.recSearch.addEventListener('input', function () {
+recQuery = el.recSearch.value.trim();
+el.recClear.hidden = el.recSearch.value.length === 0;
+if (state) renderRecords(state);
+});
+el.recClear.addEventListener('click', function () {
+el.recSearch.value = '';
+recQuery = '';
+el.recClear.hidden = true;
+if (state) renderRecords(state);
+el.recSearch.focus();
+});
+document.addEventListener('keydown', function (e) {
+if (e.key === '/' && !isTyping(e.target)) {
+e.preventDefault();
+el.recSearch.focus();
+el.recSearch.select();
+} else if (e.key === 'Escape' && document.activeElement === el.recSearch) {
+el.recSearch.value = '';
+recQuery = '';
+el.recClear.hidden = true;
+if (state) renderRecords(state);
+}
+});
+window.addEventListener('pagehide', function () {
+closeSse();
+stopRetry();
+stopPoll();
+stopProbe();
+});
+document.addEventListener('visibilitychange', function () {
+if (document.visibilityState === 'visible' && live && !es) {
+fetchState().then(function (s) { onLiveData(s); }).catch(function () {});
+}
+});
+}
+function init() {
+applyTheme(themeNow());
+var footUrl = document.getElementById('footUrl');
+if (footUrl && window.location.protocol !== 'file:') {
+footUrl.textContent = window.location.origin;
+footUrl.title = '当前监控地址';
+}
+bindEvents();
+tick();
+setInterval(tick, 1000);
+if (pinnedDemo) {
+showDemo('pinned');
+} else {
+connect();
+}
+}
+init();
+})();
+</script>
+</body>
+</html>

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""环境自检：Python 版本、依赖包、AI 配置、Playwright 浏览器。"""
-import sys
+"""环境自检：Python 版本、依赖包、AI 配置、Playwright 浏览器。
+
+用法: python check_env.py
+退出码 0 表示环境就绪。
+"""
 import os
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -16,22 +20,24 @@ REQUIRED_PACKAGES = {
 }
 
 
+def _mask(key: str) -> str:
+    return key[:8] + "*" * max(0, len(key) - 8) if key else ""
+
+
 def main():
     print("=" * 56)
-    print("WhisperMark 环境自检")
+    print("WhisperMark 2.0 · 环境自检")
     print("=" * 56)
 
     home = project_home()
     ok = True
 
     # 项目路径
-    if home.is_dir():
+    if home.is_dir() and (home / "main.py").exists() and (home / "wm").is_dir():
         print(f"[OK]   项目路径: {home}")
-        if not (home / "main.py").exists():
-            print("[!]    警告: 项目下未找到 main.py")
-            ok = False
     else:
-        print(f"[X]    项目路径不存在: {home}")
+        print(f"[X]    找不到 WhisperMark 2.0 项目: {home}")
+        print("       请设置环境变量 WHISPERMARK_HOME 指向项目根目录")
         return 1
 
     # Python 版本
@@ -50,28 +56,23 @@ def main():
             print(f"       安装: pip install -r \"{home / 'requirements.txt'}\"")
             ok = False
 
-    # AI 配置
-    key = os.environ.get("AI_API_KEY", "")
-    if key:
-        shown = key[:8] + "*" * max(0, len(key) - 8)
-        print(f"[OK]   AI_API_KEY   {shown}")
-    else:
+    # AI 配置（兼容 WM_AI_* 与旧 AI_*）
+    key = (os.environ.get("WM_AI_API_KEY") or os.environ.get("AI_API_KEY", ""))
+    if not key:
         try:
             bootstrap()
-            from src.config import config
-
+            from wm.config import config
             key = config.AI_API_KEY
         except Exception:
             key = ""
-        if key:
-            shown = key[:8] + "*" * max(0, len(key) - 8)
-            print(f"[OK]   AI_API_KEY   {shown} (来自 src/config.py)")
-        else:
-            print("[X]    AI_API_KEY   未配置")
-            ok = False
-
-    print(f"[i]    AI_BASE_URL  {os.environ.get('AI_BASE_URL', '(默认)')}")
-    print(f"[i]    AI_MODEL     {os.environ.get('AI_MODEL', '(默认)')}")
+    if key:
+        print(f"[OK]   AI_API_KEY   {_mask(key)}")
+    else:
+        print("[X]    AI_API_KEY   未配置")
+        print("       设置 WM_AI_API_KEY（或 AI_API_KEY），或在 .env 中配置")
+        ok = False
+    print(f"[i]    AI_BASE_URL  {os.environ.get('WM_AI_BASE_URL') or os.environ.get('AI_BASE_URL') or '(默认 DeepSeek)'}")
+    print(f"[i]    AI_MODEL     {os.environ.get('WM_AI_MODEL') or os.environ.get('AI_MODEL') or '(默认 deepseek-chat)'}")
 
     # Playwright 浏览器
     try:
@@ -90,8 +91,9 @@ def main():
     print("=" * 56)
     if ok:
         print("[OK] 环境就绪")
-        print("     无人值守评分已可用；交互阅卷请在自己的终端运行:")
-        print(f"     cd \"{home}\" && python main.py --max-score 13")
+        print("     虚拟演示: python main.py demo")
+        print("     真实阅卷: python main.py grade --platform zhixue --rubric-id <细则ID> --auto")
+        print(f"     项目目录: cd \"{home}\"")
         return 0
     print("[X] 环境未就绪，请按上方提示修复")
     return 1

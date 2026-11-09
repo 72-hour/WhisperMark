@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070a12">
+<title>WhisperMark 2.0 · Agent 驱动的多平台 AI 阅卷</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%236366f1'/%3E%3Cpath d='M8 20h1.6M12.4 13v7M16.8 8v13M21.2 12v9M25.6 16v3' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+/* ========== WhisperMark 2.0 · 展示页（与 monitor.html 共用设计语言） ========== */
+:root {
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 22px; --r-full: 999px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --mono: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: clamp(16px, 4vw, 32px);
+
+  color-scheme: dark;
+  --bg: #070a12;
+  --surface-1: rgba(255,255,255,.045);
+  --surface-2: rgba(255,255,255,.075);
+  --solid: #0c1220;
+  --border: rgba(255,255,255,.085);
+  --border-strong: rgba(255,255,255,.17);
+  --text: #eef2ff;
+  --text-2: #a9b5cf;
+  --text-3: #6f7c99;
+  --accent: #6366f1;
+  --accent-2: #22d3ee;
+  --accent-grad: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%);
+  --accent-soft: rgba(99,102,241,.15);
+  --ok: #34d399; --ok-soft: rgba(52,211,153,.13);
+  --warn: #fbbf24; --warn-soft: rgba(251,191,36,.13);
+  --danger: #fb7185;
+  --track: rgba(255,255,255,.08);
+  --glow-1: rgba(99,102,241,.22);
+  --glow-2: rgba(34,211,238,.12);
+  --shadow: 0 30px 70px -44px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,.03) inset;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; font-family: var(--font); font-size: 15px; line-height: 1.65;
+  color: var(--text); background: var(--bg); overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 6% -12%, var(--glow-1), transparent 62%),
+    radial-gradient(760px 460px at 96% 4%, var(--glow-2), transparent 60%);
+}
+body::after {
+  content: ""; position: fixed; left: 20%; right: -10%; bottom: -20%; height: 60%;
+  z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, var(--glow-2), transparent 70%);
+  opacity: .6;
+}
+h1, h2, h3, h4, p, figure { margin: 0; }
+a { color: var(--accent-2); text-decoration: none; }
+ul { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; }
+:where(a, button, input):focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 6px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+::selection { background: var(--accent-soft); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+.wrap { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 var(--gutter); position: relative; z-index: 1; }
+.kicker { font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-2); font-weight: 650; }
+
+/* ---------------- header ---------------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(7,10,18,.74);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+.topbar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 11px; flex: none; display: grid; place-items: center;
+  background: var(--accent-grad); color: #fff;
+  box-shadow: 0 8px 20px -10px rgba(99,102,241,.95), 0 1px 0 rgba(255,255,255,.25) inset;
+}
+.brand-mark svg { width: 20px; height: 20px; display: block; }
+.brand-name { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.brand-sub { display: block; font-size: 10.5px; font-weight: 500; letter-spacing: .13em; color: var(--text-3); text-transform: uppercase; }
+.nav { display: flex; align-items: center; gap: 22px; font-size: 13.5px; }
+.nav a { color: var(--text-2); transition: color .15s; }
+.nav a:hover { color: var(--text); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: var(--r-md); border: 1px solid transparent;
+  font-size: 14px; font-weight: 650; cursor: pointer; white-space: nowrap;
+  transition: transform .16s var(--ease), box-shadow .16s, border-color .16s, background .16s;
+}
+.btn svg { width: 15px; height: 15px; flex: none; }
+.btn-primary { background: var(--accent-grad); color: #fff; box-shadow: 0 10px 26px -14px rgba(99,102,241,.95); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 32px -14px rgba(99,102,241,1); }
+.btn-ghost { background: var(--surface-1); border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.btn-sm { padding: 7px 13px; font-size: 12.5px; border-radius: var(--r-sm); }
+
+/* ---------------- hero ---------------- */
+.hero { padding: clamp(56px, 9vw, 104px) 0 clamp(48px, 8vw, 84px); text-align: center; }
+.tag {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px;
+  padding: 6px 14px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--surface-1);
+  font-size: 12.5px; color: var(--text-2); font-weight: 550;
+}
+.tag i { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); animation: pulse 1.8s ease-in-out infinite; }
+.hero h1 { font-size: clamp(32px, 5.4vw, 54px); font-weight: 750; letter-spacing: -.025em; line-height: 1.16; }
+.hero h1 .grad {
+  background: var(--accent-grad); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--accent);
+}
+.hero .sub { max-width: 620px; margin: 18px auto 0; font-size: clamp(15px, 1.7vw, 17px); color: var(--text-2); }
+.badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 26px 0 30px; }
+.badges span {
+  padding: 5px 12px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--surface-1);
+  font-size: 12px; color: var(--text-2);
+}
+.cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.hero-code {
+  max-width: 640px; margin: 46px auto 0; text-align: left;
+  background: rgba(10,15,28,.85); border: 1px solid var(--border); border-radius: var(--r-lg);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.hero-code .bar { display: flex; align-items: center; gap: 6px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.hero-code .bar i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.hero-code .bar span { margin-left: auto; font-size: 11px; color: var(--text-3); font-family: var(--mono); }
+.hero-code pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; color: #c9d6f2; }
+.hero-code .c { color: #5f6d8d; }
+.hero-code .k { color: #a78bfa; }
+.hero-code .s { color: #34d399; }
+
+/* ---------------- sections ---------------- */
+.section { padding: clamp(48px, 7vw, 76px) 0; }
+.sec-head { text-align: center; margin-bottom: clamp(28px, 4vw, 44px); }
+.sec-head .kicker { display: block; margin-bottom: 10px; }
+.sec-head h2 { font-size: clamp(24px, 3.3vw, 32px); font-weight: 700; letter-spacing: -.015em; }
+.sec-head p { max-width: 560px; margin: 12px auto 0; color: var(--text-2); font-size: 14.5px; }
+
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.feature {
+  position: relative; padding: 22px; border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  transition: transform .18s var(--ease), border-color .18s;
+}
+.feature:hover { transform: translateY(-3px); border-color: var(--border-strong); }
+.feature .ico {
+  width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
+  margin-bottom: 14px; color: var(--accent-2); background: var(--accent-soft); border: 1px solid var(--border);
+}
+.feature .ico svg { width: 19px; height: 19px; display: block; }
+.feature h3 { font-size: 15.5px; font-weight: 650; margin-bottom: 8px; }
+.feature p { font-size: 13.5px; color: var(--text-2); }
+
+.anchor {
+  border: 1px solid var(--border); border-radius: var(--r-xl);
+  background:
+    radial-gradient(120% 160% at 8% -10%, var(--accent-soft), transparent 58%),
+    linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  box-shadow: var(--shadow); padding: clamp(24px, 4vw, 44px);
+}
+.anchor h2 { font-size: clamp(21px, 2.8vw, 27px); font-weight: 700; text-align: center; margin-bottom: 26px; letter-spacing: -.01em; }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.step { padding: 18px; border-radius: var(--r-md); background: rgba(7,10,18,.55); border: 1px solid var(--border); }
+.step .n {
+  width: 26px; height: 26px; border-radius: 8px; margin-bottom: 10px;
+  display: grid; place-items: center; font-size: 13px; font-weight: 750; color: #fff;
+  background: var(--accent-grad);
+}
+.step h4 { font-size: 14px; font-weight: 650; margin-bottom: 5px; }
+.step p { font-size: 12.5px; color: var(--text-2); }
+.anchor .note {
+  margin-top: 22px; padding: 12px 16px; border-radius: var(--r-md);
+  border: 1px dashed var(--border-strong); background: rgba(7,10,18,.4);
+  font-size: 13px; color: var(--text-2); text-align: center;
+}
+.anchor .note b { color: var(--text); font-weight: 650; }
+
+.arch { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(24px, 5vw, 56px); align-items: center; }
+.arch .kicker { display: block; margin-bottom: 10px; }
+.arch h2 { font-size: clamp(22px, 2.9vw, 29px); font-weight: 700; margin-bottom: 14px; letter-spacing: -.015em; }
+.arch p { color: var(--text-2); font-size: 14.5px; margin-bottom: 10px; }
+.arch p b { color: var(--text); font-weight: 650; }
+.layers { display: flex; flex-direction: column; gap: 10px; }
+.layer {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  border-radius: var(--r-md); border: 1px solid var(--border); background: var(--surface-1);
+}
+.layer .tagchip {
+  flex: none; width: 56px; padding: 3px 0; text-align: center;
+  border-radius: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+}
+.layer b { display: block; font-size: 14px; font-weight: 650; }
+.layer span { font-size: 12px; color: var(--text-3); }
+.l1 .tagchip { color: var(--accent-2); background: rgba(34,211,238,.13); }
+.l2 .tagchip { color: #a78bfa; background: rgba(167,139,250,.13); }
+.l3 .tagchip { color: #93b4ff; background: rgba(99,102,241,.16); }
+.l4 .tagchip { color: var(--ok); background: var(--ok-soft); }
+
+.platforms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.plat {
+  display: flex; gap: 16px; padding: 22px; border-radius: var(--r-lg);
+  border: 1px solid var(--border); background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  box-shadow: var(--shadow);
+}
+.plat .avatar {
+  flex: none; width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
+  font-size: 18px; font-weight: 750;
+}
+.plat h3 { font-size: 16px; font-weight: 650; margin-bottom: 4px; }
+.plat p { font-size: 13px; color: var(--text-2); }
+.plat .chip {
+  display: inline-block; margin-top: 10px; padding: 2px 9px; border-radius: var(--r-full);
+  font-size: 11px; font-weight: 650; color: var(--ok); background: var(--ok-soft);
+}
+
+/* ---------------- live monitor strip ---------------- */
+.monitor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(24px, 5vw, 52px); align-items: start; }
+.monitor .kicker { display: block; margin-bottom: 10px; }
+.monitor h2 { font-size: clamp(22px, 2.9vw, 29px); font-weight: 700; margin-bottom: 14px; letter-spacing: -.015em; }
+.monitor p { color: var(--text-2); font-size: 14.5px; margin-bottom: 12px; }
+.monitor .cmd {
+  display: block; padding: 12px 14px; border-radius: var(--r-sm);
+  background: rgba(10,15,28,.85); border: 1px solid var(--border);
+  font-family: var(--mono); font-size: 12.5px; color: #34d399;
+  overflow-x: auto; white-space: nowrap;
+}
+.monitor .url-hint { margin-top: 12px; font-size: 13px; color: var(--text-3); }
+.monitor .url-hint code {
+  font-family: var(--mono); font-size: 12.5px; color: var(--accent-2);
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px;
+}
+.monitor .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.monitor .tip { margin-top: 12px; font-size: 12px; color: var(--text-3); }
+
+.dash {
+  border-radius: var(--r-lg); border: 1px solid var(--border); overflow: hidden;
+  background: rgba(10,15,28,.8); box-shadow: var(--shadow);
+}
+.dash .top {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); background: var(--surface-1);
+}
+.dash .top .title { font-size: 12.5px; font-weight: 650; color: var(--text-2); }
+.dash .conn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); }
+.dash .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex: none; }
+.dash .dot.live { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); animation: pulse 1.8s ease-in-out infinite; }
+.dash .dot.demo { background: var(--accent-2); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dash .body { padding: 16px; }
+.dash .main-row { display: flex; align-items: center; gap: 16px; }
+.dash .ring-wrap { position: relative; width: 92px; height: 92px; flex: none; }
+.dash .ring { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.dash .ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.dash .ring .trk { stroke: var(--track); }
+.dash .ring .fil { stroke: url(#dashGrad); stroke-dasharray: 226.2; stroke-dashoffset: 226.2; transition: stroke-dashoffset .8s var(--ease); }
+.dash .ring-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.dash .pct {
+  font-size: 22px; font-weight: 750; line-height: 1; font-variant-numeric: tabular-nums;
+  background: var(--accent-grad); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--accent);
+}
+.dash .pct-label { font-size: 9.5px; letter-spacing: .12em; color: var(--text-3); text-transform: uppercase; }
+.dash .nums { min-width: 0; flex: 1; }
+.dash .nums .big { font-size: 21px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.dash .nums .big small { font-size: 12px; font-weight: 500; color: var(--text-3); margin-left: 3px; }
+.dash .nums .label { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.dash .progress { height: 6px; border-radius: var(--r-full); background: var(--track); overflow: hidden; margin-top: 10px; }
+.dash .progress i { display: block; height: 100%; width: 0; border-radius: var(--r-full); background: var(--accent-grad); transition: width .7s var(--ease); }
+.dash .badge-demo {
+  display: none; margin-top: 12px; padding: 7px 11px; border-radius: var(--r-sm);
+  border: 1px solid rgba(34,211,238,.32); background: rgba(34,211,238,.1);
+  font-size: 11.5px; color: var(--text-2);
+}
+.dash.is-demo .badge-demo { display: block; }
+.dash .kv { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.dash .kv .row { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 12.5px; }
+.dash .kv .k { color: var(--text-3); flex: none; }
+.dash .kv .v { color: var(--text); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .recent { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 8px; }
+.dash .recent .row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; }
+.dash .recent .nm { color: var(--text-2); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash .recent .sc { font-variant-numeric: tabular-nums; font-weight: 650; color: var(--text); }
+.dash .recent .sc small { color: var(--text-3); font-weight: 500; }
+.dash .recent .cf { flex: none; font-size: 10px; padding: 1px 6px; border-radius: var(--r-full); }
+.dash .cf.high { color: var(--ok); background: var(--ok-soft); }
+.dash .cf.medium { color: var(--warn); background: var(--warn-soft); }
+.dash .cf.low, .dash .cf.error { color: var(--danger); background: rgba(251,113,133,.13); }
+.dash .recent-empty { padding: 8px 0; font-size: 12px; color: var(--text-3); }
+
+/* ---------------- footer ---------------- */
+.footer { padding: 40px 0 56px; border-top: 1px solid var(--border); margin-top: 8px; }
+.footer-in { display: flex; align-items: center; justify-content: space-between; gap: 14px 24px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-3); }
+.footer .meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.footer .sep { opacity: .45; }
+.footer code { font-family: var(--mono); font-size: 11.5px; color: var(--text-2); }
+.footer .links { display: flex; gap: 16px; }
+.footer .links a { color: var(--text-3); }
+.footer .links a:hover { color: var(--text-2); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 980px) {
+  .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .arch, .monitor { grid-template-columns: minmax(0, 1fr); }
+  .nav { display: none; }
+}
+@media (max-width: 640px) {
+  .features, .platforms, .steps { grid-template-columns: minmax(0, 1fr); }
+  .topbar-in { min-height: 58px; }
+  .hero { padding-top: 44px; }
+  .hero-code pre { font-size: 11.5px; }
+  .dash .main-row { gap: 12px; }
+}
+@media print {
+  body { background: #fff; color: #111; }
+  body::before, body::after, .topbar .btn, .footer .links { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 12h1.2M8 8.5v7M12 5v14M16 9v6M20 11v2"/>
+        </svg>
+      </span>
+      <span>
+        <span class="brand-name">WhisperMark</span>
+        <span class="brand-sub">2.0 · AI 阅卷工具链</span>
+      </span>
+    </div>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#features">特性</a>
+      <a href="#anchor">防幻觉机制</a>
+      <a href="#arch">架构</a>
+      <a href="#platforms">平台</a>
+      <a href="#monitor">实时监控</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" id="topMonitorLink" href="http://127.0.0.1:8321/" target="_blank" rel="noopener">
+      打开监控页
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="tag"><i aria-hidden="true"></i>Python · Playwright · CLI · Agent Skill</div>
+      <h1>多平台 AI 阅卷，<br><span class="grad">锚定细则，杜绝幻觉</span></h1>
+      <p class="sub">Agent 驱动的智学网 / 阅小二自动批改工具。晚上挂机睡觉，早上起来全改完。评分细则独立落盘锚定，千份批改不漂分。</p>
+      <div class="badges">
+        <span>智学网</span><span>阅小二</span><span>评分细则锚定</span>
+        <span>实时监控</span><span>微信推送</span><span>MIT 开源</span>
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" id="heroMonitorLink" href="http://127.0.0.1:8321/" target="_blank" rel="noopener">
+          查看实时监控
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#anchor">了解防幻觉机制</a>
+      </div>
+      <div class="hero-code">
+        <div class="bar">
+          <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+          <span>whispermark · quick start</span>
+        </div>
+        <pre><span class="c"># 1. 生成结构化评分细则（教师检查）</span>
+python main.py analyze-question --image 题干.jpg --platform zhixue --max-score 20
+
+<span class="c"># 2. 无人值守阅卷（锚定已锁定细则 + 实时监控 + 微信推送）</span>
+python main.py grade --platform zhixue --rubric-id 数学第15题 <span class="k">--auto</span>
+
+<span class="c"># 3. 打开监控页 / 导出报告</span>
+<span class="s">http://127.0.0.1:8321</span>   ·   python main.py export --format csv</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">Features</span>
+        <h2>核心能力</h2>
+        <p>从细则生成、批量批改到实时监控与导出，一条命令跑完整条阅卷链路。</p>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4.5 11 9l4.5 1.5L11 12l-1.5 4.5L8 12 3.5 10.5 8 9Z"/><path d="M17 14l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9Z"/></svg></div>
+          <h3>AI 多模态评分</h3>
+          <p>识别手写答题卡，基于评分细则逐采分点给分，输出理由与置信度。</p>
+        </article>
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 5 6.5v5.2c0 4.2 3 7.4 7 8.8 4-1.4 7-4.6 7-8.8V6.5L12 3.5Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>细则锚定防幻觉</h3>
+          <p>细则结构化落盘 + 版本号 + 锁定，批改中禁止 AI 重写，杜绝评分漂移。</p>
+        </article>
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/><path d="m10 8.5 3 2-3 2Z"/></svg></div>
+          <h3>Playwright 自动化</h3>
+          <p>直接操作 DOM，不占鼠标键盘，浏览器可最小化，后台静默挂机批改。</p>
+        </article>
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2-5 3 10 2.5-6 1.8 3H21"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <h3>实时监控面板</h3>
+          <p>本地端口 + SSE 实时推送，进度、得分、异常一目了然，手机也可远程查看。</p>
+        </article>
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5c0 4-3.8 7-8.5 7-1 0-2-.15-2.9-.4L4.5 20l1.2-3.4A6.6 6.6 0 0 1 3.5 11.5c0-4 3.8-7 8.5-7s8.5 3 8.5 7Z"/></svg></div>
+          <h3>微信推送</h3>
+          <p>开始 / 进度 / 异常 / 完成自动推送到微信（workbuddy 小龙虾等任意 webhook）。</p>
+        </article>
+        <article class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h3l1.6 2h6.4A2.5 2.5 0 0 1 20 9.5V17a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17V7.5Z"/><path d="M12 10.5v6M9 13.5h6"/></svg></div>
+          <h3>历史与导出</h3>
+          <p>批改记录全程留痕，一键导出 CSV / JSON / HTML，支持回查与统计。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="anchor">
+    <div class="wrap">
+      <div class="anchor">
+        <h2>评分细则锚定 —— 防幻觉的核心</h2>
+        <div class="steps">
+          <div class="step"><div class="n">1</div><h4>生成细则</h4><p>AI 分析题干，产出结构化采分点（分值 + 关键词）。</p></div>
+          <div class="step"><div class="n">2</div><h4>教师确认</h4><p>导出独立 MD 供教师检查，确认后锁定 + 版本号。</p></div>
+          <div class="step"><div class="n">3</div><h4>落盘锚定</h4><p>细则写入 data/rubrics/*.json，与对话流彻底解耦。</p></div>
+          <div class="step"><div class="n">4</div><h4>强制复用</h4><p>每份答卷注入同一份锁定细则，禁止 AI 凭空造分。</p></div>
+        </div>
+        <p class="note">规则清晰：<b>对话负责「生成 + 确认」，文件负责「存储 + 锚定」</b>，二者职责分离。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="arch">
+    <div class="wrap arch">
+      <div>
+        <span class="kicker">Architecture</span>
+        <h2>四层架构</h2>
+        <p>业务逻辑全部下沉到引擎层，CLI 与 Skill 只是薄封装。即使脱离 Agent，也能直接用命令行跑通。</p>
+        <p>监控层独立运行在本地端口，<b>SSE 实时推送</b>批改进度，不侵入阅卷主流程。</p>
+      </div>
+      <div class="layers" aria-label="架构层级">
+        <div class="layer l1"><div class="tagchip">入口</div><div class="desc"><b>CLI · Agent Skill</b><span>python main.py grade · workbuddy / CodeBuddy 调用</span></div></div>
+        <div class="layer l2"><div class="tagchip">编排</div><div class="desc"><b>监控 · 通知</b><span>HTTP + SSE 实时面板 · 微信 webhook 推送</span></div></div>
+        <div class="layer l3"><div class="tagchip">引擎</div><div class="desc"><b>阅卷引擎 · AI 评分 · 细则锚定</b><span>Grader · AIGrader · RubricManager · StateManager</span></div></div>
+        <div class="layer l4"><div class="tagchip">平台</div><div class="desc"><b>平台适配器</b><span>智学网（iframe） · 阅小二（Vue3） · 可扩展</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="platforms">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">Platforms</span>
+        <h2>支持平台</h2>
+        <p>平台差异被适配器隔离，新增平台只需实现打分与提交两个动作。</p>
+      </div>
+      <div class="platforms">
+        <article class="plat">
+          <div class="avatar" style="background:rgba(99,102,241,.16);color:#93b4ff">智</div>
+          <div>
+            <h3>智学网</h3>
+            <p>新版 iframe 微前端 + 旧版双兼容，自动穿透 iframe 定位答题卡、填分、提交。</p>
+            <span class="chip">已适配</span>
+          </div>
+        </article>
+        <article class="plat">
+          <div class="avatar" style="background:rgba(167,139,250,.16);color:#c4b5fd">阅</div>
+          <div>
+            <h3>阅小二</h3>
+            <p>Vue3 + Element Plus，分小题评分、OSS 裁剪答题卡、回评模式识别（与五岳阅卷同构）。</p>
+            <span class="chip">已适配</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="monitor">
+    <div class="wrap monitor">
+      <div>
+        <span class="kicker">Live Monitor</span>
+        <h2>阅卷中的实时监控</h2>
+        <p>阅卷启动后，监控服务器自动运行在本地端口，通过 SSE 实时推送状态。右侧面板即为实际监控视图 —— 阅卷运行时实时刷新，未运行时显示演示数据。</p>
+        <code class="cmd">$ python main.py grade --platform zhixue --rubric-id 数学第15题 --auto</code>
+        <p class="url-hint">监控地址默认 <code>http://127.0.0.1:8321</code>，手机连同一局域网即可远程查看。</p>
+        <div class="actions">
+          <a class="btn btn-primary" id="monitorOpenLink" href="http://127.0.0.1:8321/" target="_blank" rel="noopener">
+            打开阅卷指挥中心
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#features">回到特性</a>
+        </div>
+        <p class="tip" id="monitorTip">面板会自动探测同源监控服务；也可单独运行 python demo_monitor.py 预览。</p>
+      </div>
+
+      <div class="dash" id="dashPanel">
+        <div class="top">
+          <span class="title">WhisperMark 2.0 · 阅卷监控</span>
+          <span class="conn"><i class="dot" id="dashDot" aria-hidden="true"></i><span id="dashConn">未连接</span></span>
+        </div>
+        <div class="body">
+          <div class="main-row">
+            <div class="ring-wrap">
+              <svg class="ring" id="dashRingSvg" viewBox="0 0 92 92" role="img" aria-label="批改进度">
+                <defs>
+                  <linearGradient id="dashGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#22d3ee"/>
+                    <stop offset="100%" stop-color="#6366f1"/>
+                  </linearGradient>
+                </defs>
+                <circle class="trk" cx="46" cy="46" r="36"/>
+                <circle class="fil" id="dashRingFill" cx="46" cy="46" r="36"/>
+              </svg>
+              <div class="ring-center">
+                <span class="pct" id="dashPct">—</span>
+                <span class="pct-label">完成度</span>
+              </div>
+            </div>
+            <div class="nums">
+              <div class="big"><span id="dashGraded">—</span><small id="dashTotal">/ — 份</small></div>
+              <div class="label" id="dashStatus">暂无运行中的阅卷</div>
+              <div class="progress" role="progressbar" aria-label="批改进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="dashBarWrap"><i id="dashBar"></i></div>
+            </div>
+          </div>
+          <div class="badge-demo" id="dashDemo">演示数据 · DEMO — 未检测到运行中的阅卷服务</div>
+          <div class="kv">
+            <div class="row"><span class="k">当前学生</span><span class="v" id="dashStudent">—</span></div>
+            <div class="row"><span class="k">平台 / 题目</span><span class="v" id="dashQuestion">—</span></div>
+            <div class="row"><span class="k">评分细则</span><span class="v" id="dashRubric">—</span></div>
+            <div class="row"><span class="k">异常数</span><span class="v" id="dashErrors">—</span></div>
+          </div>
+          <div class="recent" id="dashRecent" aria-label="最近批改记录"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div class="meta">
+      <span>WhisperMark 2.0</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <span>v2.0.0</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <span>MIT License</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <code>http://127.0.0.1:8321</code>
+    </div>
+    <div class="links">
+      <a href="#monitor">实时监控</a>
+      <a href="#arch">架构</a>
+      <a href="#platforms">平台</a>
+      <span>仅供学习交流，AI 评分仅供参考</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var RING = 2 * Math.PI * 36;            // 226.19
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    dash: $('dashPanel'), dot: $('dashDot'), conn: $('dashConn'),
+    pct: $('dashPct'), ringFill: $('dashRingFill'), ringSvg: $('dashRingSvg'),
+    graded: $('dashGraded'), total: $('dashTotal'), status: $('dashStatus'),
+    bar: $('dashBar'), barWrap: $('dashBarWrap'), demo: $('dashDemo'),
+    student: $('dashStudent'), question: $('dashQuestion'),
+    rubric: $('dashRubric'), errors: $('dashErrors'), recent: $('dashRecent'),
+    openLinks: [$('monitorOpenLink'), $('topMonitorLink'), $('heroMonitorLink')],
+    tip: $('monitorTip')
+  };
+
+  var STATUS = { idle: '待机', running: '批改中', paused: '已暂停', done: '已完成', error: '异常', stopped: '已停止' };
+  var PLATFORMS = { zhixue: '智学网', haoyuejuan: '阅小二', yuexiaoer: '阅小二' };
+  var CONF = { high: '高', medium: '中', low: '低', error: '异常' };
+  var DEFAULT_BASE = 'http://127.0.0.1:8321';
+  var base = null;                        // 解析出的监控服务地址
+  var live = false;
+  var es = null;
+  var pollTimer = null;
+  var retryTimer = null;
+  var attempts = 0;
+  var ringFirst = true;
+
+  function esc(v) {
+    return String(v === null || v === undefined ? '' : v)
+      .replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function toNum(v, d) {
+    var n = Number(v);
+    return (v === null || v === undefined || v === '' || isNaN(n)) ? d : n;
+  }
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function num(v, digits) {
+    if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '—';
+    var n = Number(v);
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+    return n.toFixed(digits === undefined ? 1 : digits).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  function clamp(n, lo, hi) { return n < lo ? lo : (n > hi ? hi : n); }
+
+  function setConn(text, kind) {
+    el.conn.textContent = text;
+    el.dot.className = 'dot' + (kind ? ' ' + kind : '');
+  }
+
+  function setDemo(isDemo) {
+    live = !isDemo;
+    if (isDemo) {
+      el.dash.classList.add('is-demo');
+      el.demo.textContent = '演示数据 · DEMO — 未检测到运行中的阅卷服务，接入后自动切换为实时数据';
+    } else {
+      el.dash.classList.remove('is-demo');
+    }
+  }
+
+  function render(state) {
+    var total = Math.max(0, toNum(state.total, 0));
+    var graded = Math.max(0, toNum(state.graded, 0));
+    var pct = total > 0 ? clamp(graded / total * 100, 0, 100) : 0;
+    var status = String(state.status || 'idle');
+    var offset = RING * (1 - pct / 100);
+
+    if (ringFirst) {
+      ringFirst = false;
+      requestAnimationFrame(function () { el.ringFill.style.strokeDashoffset = String(offset); });
+    } else {
+      el.ringFill.style.strokeDashoffset = String(offset);
+    }
+    el.pct.textContent = total > 0 ? num(pct, 1) + '%' : '—';
+    el.graded.textContent = String(graded);
+    el.total.textContent = '/ ' + (total > 0 ? total : '—') + ' 份';
+    el.bar.style.width = pct + '%';
+    el.barWrap.setAttribute('aria-valuenow', String(Math.round(pct)));
+    el.ringSvg.setAttribute('aria-label', '批改进度 ' + num(pct, 1) + '%');
+
+    var label = STATUS[status] || status || '待机';
+    var started = state.started_at ? ' · 开始于 ' + String(state.started_at).slice(11, 16) : '';
+    el.status.textContent = status === 'running'
+      ? '实时批改中 · 剩余 ' + Math.max(total - graded, 0) + ' 份'
+      : label + started;
+
+    el.student.textContent = state.current_student || '—';
+    el.question.textContent = (PLATFORMS[String(state.platform || '').toLowerCase()] || state.platform || '—') +
+      (state.question_id ? ' · ' + state.question_id : '');
+    el.rubric.textContent = state.rubric_version ? 'v' + state.rubric_version : '—';
+    var errs = Array.isArray(state.errors) ? state.errors.length : 0;
+    el.errors.textContent = errs > 0 ? errs + ' 条' : '无';
+
+    var recs = Array.isArray(state.records) ? state.records.slice(-3).reverse() : [];
+    if (recs.length === 0) {
+      el.recent.innerHTML = '<div class="recent-empty">暂无批改记录</div>';
+    } else {
+      el.recent.innerHTML = recs.map(function (r) {
+        var cf = String((r && r.confidence) || '').toLowerCase();
+        var cls = CONF[cf] ? cf : 'low';
+        return '<div class="row">' +
+          '<span class="nm">' + esc((r && r.student_name) || '—') + '</span>' +
+          '<span class="sc">' + (isNaN(Number(r && r.score)) ? '—' : num(r.score, 1)) +
+          '<small> / ' + num((r && r.max_score) || 0) + '</small></span>' +
+          '<span class="cf ' + cls + '">' + (CONF[cf] || '—') + '</span>' +
+          '</div>';
+      }).join('');
+    }
+  }
+
+  function demoState() {
+    var now = new Date();
+    var hhmmss = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+    return {
+      status: 'running', platform: 'zhixue', question_id: '数学第15题',
+      rubric_version: '1.1', total: 200, graded: 128,
+      current_student: '张同学', current_score: 13.5,
+      current_reasoning: '采分点命中 6/8，第（2）问计算跳步扣 2 分。',
+      errors: [
+        { time: hhmmss, message: '第 96 份答卷重试后成功', fatal: false },
+        { time: hhmmss, message: '图片加载超时（第 129 份）已重试', fatal: false }
+      ],
+      records: [
+        { index: 126, student_name: '李同学', score: 15.5, max_score: 20, confidence: 'high', timestamp: '' },
+        { index: 127, student_name: '王同学', score: 9, max_score: 20, confidence: 'medium', timestamp: '' },
+        { index: 128, student_name: '张同学', score: 13.5, max_score: 20, confidence: 'high', timestamp: '' }
+      ],
+      started_at: '2026-11-09 17:49:00', updated_at: '2026-11-09 17:50:06',
+      percentage: 64, remaining: 72
+    };
+  }
+
+  function showDemo() {
+    setDemo(true);
+    setConn('演示数据', 'demo');
+    render(demoState());
+  }
+
+  function updateLinks() {
+    var href = (base || DEFAULT_BASE) + '/';
+    el.openLinks.forEach(function (a) { if (a) a.setAttribute('href', href); });
+  }
+
+  function jsonFetch(url) {
+    return new Promise(function (resolve, reject) {
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctrl) { ctrl.abort(); } else { reject(new Error('timeout')); } }, 4000);
+      var opts = { cache: 'no-store', headers: { Accept: 'application/json' } };
+      if (ctrl) opts.signal = ctrl.signal;
+      fetch(url, opts).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (data) {
+        clearTimeout(timer);
+        if (data && typeof data === 'object' && !Array.isArray(data)) resolve(data);
+        else reject(new Error('bad payload'));
+      }).catch(function (err) { clearTimeout(timer); reject(err); });
+    });
+  }
+
+  function openStream() {
+    if (!('EventSource' in window)) { startPoll(); return; }
+    if (es) { try { es.close(); } catch (e) {} es = null; }
+    try {
+      es = new EventSource(base + '/events');
+    } catch (e) {
+      es = null;
+      startPoll();
+      return;
+    }
+    es.onopen = function () {
+      attempts = 0;
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      setConn('实时已连接', 'live');
+    };
+    es.onmessage = function (ev) {
+      var data;
+      try { data = JSON.parse(ev.data); } catch (e) { return; }
+      if (!data || typeof data !== 'object') return;
+      setDemo(false);
+      setConn('实时已连接', 'live');
+      render(data);
+    };
+    es.onerror = function () {
+      if (es) { try { es.close(); } catch (e) {} es = null; }
+      startPoll();
+      scheduleRetry();
+    };
+  }
+
+  function startPoll() {
+    if (pollTimer) return;
+    pollTimer = setInterval(function () {
+      jsonFetch(base + '/api/state').then(function (s) {
+        setDemo(false);
+        render(s);
+        setConn('轮询中', 'demo');
+      }).catch(function () {
+        if (!live) setConn('未连接', '');
+      });
+    }, 3000);
+    setConn('轮询中', 'demo');
+  }
+
+  function scheduleRetry() {
+    if (retryTimer) return;
+    var delay = Math.min(15000, 1000 * Math.pow(2, attempts));
+    attempts = Math.min(attempts + 1, 8);
+    retryTimer = setTimeout(function () {
+      retryTimer = null;
+      openStream();
+    }, delay);
+  }
+
+  function connect() {
+    setConn('连接中…', '');
+    var sameOrigin = location.protocol === 'http:' || location.protocol === 'https:';
+    var candidates = sameOrigin
+      ? [location.origin, DEFAULT_BASE]
+      : [DEFAULT_BASE];
+
+    function attempt(i) {
+      if (i >= candidates.length) {
+        base = DEFAULT_BASE;
+        updateLinks();
+        showDemo();
+        // 持续探测，服务起来后自动切换
+        retryTimer = setTimeout(function () {
+          retryTimer = null;
+          attempts = 0;
+          connect();
+        }, 15000);
+        return;
+      }
+      var candidate = candidates[i];
+      jsonFetch(candidate + '/api/state').then(function (state) {
+        base = candidate;
+        updateLinks();
+        setDemo(false);
+        setConn('实时已连接', 'live');
+        render(state);
+        openStream();
+      }).catch(function () { attempt(i + 1); });
+    }
+    attempt(0);
+  }
+
+  updateLinks();
+  connect();
+})();
+</script>
+</body>
+</html>

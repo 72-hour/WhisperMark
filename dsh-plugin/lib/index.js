@@ -1,7 +1,7 @@
-// wm-probe: WhisperMark 智学网答题卡 AI 批改 DSH 工具插件。
+// wm-probe: WhisperMark 2.0 智学网答题卡 AI 批改 DSH 工具插件。
 // 通过 defineTool 注册 `wm_probe`，其 parameters 一定被编译为
 // { type: "object", properties, required }，从而修复 DeepSeek
-// "schema must be a JSON Schema of 'type: \"object\"', got 'type: null'" 的拒绝。
+// "schema must be a JSON Schema of 'type: "object"', got 'type: null'" 的拒绝。
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -42,7 +42,7 @@ export function apply(ctx) {
   ctx.tools.register(defineTool({
     name: 'wm_probe',
     description: [
-      '智学网（ZhangXue）答题卡 AI 批改入口，内部复用 WhisperMark CLI（CLI 为辅）。',
+      '智学网（ZhangXue）答题卡 AI 批改入口，内部复用 WhisperMark 2.0（CLI 为辅）。',
       '固定流程：先 action=check_env 自检；',
       '再 action=analyze_question 传题干图片 question_image，得到标准答案/解析/评分细则 scoring_rubric；',
       '最后 action=grade 传 answer_paths（答卷图片路径或目录，一次可上千份）并【必须】传入上一步得到的 scoring_rubric 作为 rubric。',
@@ -161,12 +161,15 @@ export function apply(ctx) {
       }
 
       return {
-        ok: true,
+        ok: typeof data.ok === 'boolean' ? data.ok : true,
         action: args.action,
         model: data.model ?? '',
         model_answer: data.model_answer ?? '',
         explanation: data.explanation ?? '',
         scoring_rubric: data.scoring_rubric ?? '',
+        grading_points: data.grading_points ?? [],
+        warnings: data.warnings ?? [],
+        error: data.error ?? '',
       };
     },
   }));
